@@ -93,6 +93,7 @@ func TransmitRequest(path string, origin *http.Request) (data []byte, statusCode
 	}
 	defer resp.Body.Close()
 	data, err = io.ReadAll(resp.Body)
+
 	return data, resp.StatusCode, resp.Header.Get("Content-Type"), err
 }
 
