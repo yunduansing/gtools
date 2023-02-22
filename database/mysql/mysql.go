@@ -1,4 +1,4 @@
-package database
+package mysqltool
 
 import (
 	"fmt"
