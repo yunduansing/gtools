@@ -11,19 +11,19 @@ var (
 )
 
 func YuanToFenNoErr(m string) int64 {
-	d, _ := strconv.ParseFloat(m, 10)
+	d, _ := strconv.ParseFloat(m, 64)
 	return int64(d * 100)
 }
 
 func YuanToFen(m string) (int64, error) {
-	d, err := strconv.ParseFloat(m, 10)
+	d, err := strconv.ParseFloat(m, 64)
 	if err != nil {
 		return 0, err
 	}
 	return int64(d * 100), nil
 }
 
-func FenToYuanStr(m int64) string {
+func FenInt64ToYuanStr(m int64) string {
 	return fmt.Sprintf("%.2f", float64(m)/100.0)
 }
 
