@@ -1,9 +1,12 @@
 package logger
 
 type Config struct {
-	Level    string `json:",default=info,options=debug|info|warn|error|panic|fatal"`
-	FileName string `json:",optional"`
-	LogType  string `json:",default=logrus,options=logrus|zap,optional"`
+	Level       string `json:",default=info,options=debug|info|warn|error|panic|fatal"` //日志级别，默认为info
+	FileName    string `json:",optional"`                                               //文件名
+	LogType     string `json:",default=logrus,options=logrus|zap,optional"`             //日志类型，目前支持zap和logrus
+	ServiceName string `json:",optional"`                                               //所属服务
+	MaxSize     string `json:",default=10MB,optional"`                                  //日志文件最大数量
+	MaxAge      int    `json:",default=30,optional"`                                    //最大保留天数
 }
 
 type LogLevel int
@@ -26,37 +29,37 @@ func InitLog(c Config) {
 	case "zap":
 		logger = newZapLog(c)
 	default:
-		logger = newLogrusLog(c)
+		logger = newZapLog(c)
 	}
 }
 
 func Info(v ...interface{}) {
-	logger.Info(v)
+	logger.info(v)
 }
 func Infof(format string, v ...interface{}) {
-	logger.Infof(format, v)
+	logger.infof(format, v)
 }
 func Error(v ...interface{}) {
-	logger.Error(v)
+	logger.error(v)
 }
 func Errorf(format string, v ...interface{}) {
-	logger.Errorf(format, v)
+	logger.errorf(format, v)
 }
 func Panic(v ...interface{}) {
-	logger.Panic(v)
+	logger.panic(v)
 }
 func Panicf(format string, v ...interface{}) {
-	logger.Panicf(format, v)
+	logger.panicf(format, v)
 }
 func Warn(v ...interface{}) {
-	logger.Warn(v)
+	logger.warn(v)
 }
 func Warnf(format string, v ...interface{}) {
-	logger.Warnf(format, v)
+	logger.warnf(format, v)
 }
 func Debug(v ...interface{}) {
-	logger.Debug(v)
+	logger.debug(v)
 }
 func Debugf(format string, v ...interface{}) {
-	logger.Debugf(format, v)
+	logger.debugf(format, v)
 }
