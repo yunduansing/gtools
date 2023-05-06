@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/yunduansing/gtools/gen"
 	"strconv"
 	"time"
 )
@@ -40,4 +42,9 @@ func StringToTimeNoErr(str string) time.Time {
 func StringToChineseTime(str string) (time.Time, error) {
 	t, err := time.Parse(TimeLayout, str)
 	return t, err
+}
+
+func ToJson(v interface{}) string {
+	bytes, _ := json.Marshal(v)
+	return gen.ByteToString(bytes)
 }
