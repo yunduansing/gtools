@@ -2,7 +2,7 @@ package logger
 
 type Config struct {
 	Level       string `json:",default=info,options=debug|info|warn|error|panic|fatal"` //日志级别，默认为info
-	Path        string `json:",default=/log,optional"`                                  //日志文件路径
+	FilePath    string `json:",default=/log,optional"`                                  //日志文件路径
 	LogType     string `json:",default=zap,options=logrus|zap,optional"`                //日志类型，目前支持zap和logrus
 	ServiceName string `json:",optional"`                                               //所属服务
 	MaxSize     int    `json:",default=10,optional"`                                    //日志文件最大数量
@@ -69,4 +69,9 @@ func Debug(v ...interface{}) {
 }
 func Debugf(format string, v ...interface{}) {
 	logger.debugf(format, v)
+}
+
+func Close(f func()) {
+	f()
+	logger.close()
 }

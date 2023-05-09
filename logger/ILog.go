@@ -11,4 +11,5 @@ type ILog interface {
 	warnf(format string, v ...interface{})
 	debug(v ...interface{})
 	debugf(format string, v ...interface{})
+	close()
 }
