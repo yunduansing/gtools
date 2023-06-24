@@ -2,14 +2,15 @@ package gen
 
 import (
 	"fmt"
+	"math"
 	"testing"
-	"time"
 )
 
 func TestSnowflakeID(t *testing.T) {
+	var i int64 = math.MaxInt64 - 1
+	fmt.Println(i, int(i))
 	for i := 0; i < 100; i++ {
 		id1 := Uint64()
-		fmt.Print(int(id1), " ")
-		time.Sleep(1000 * time.Millisecond)
+		fmt.Println(int(id1), " ")
 	}
 }
