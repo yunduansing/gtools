@@ -1,66 +1,135 @@
 package nacos
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yunduansing/gocommon/httputils"
-	"github.com/yunduansing/gocommon/logger"
-	"go.uber.org/zap"
-	"net/http"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
+	"sync"
 )
 
-type Config struct {
-	ServerIp   string `json:"server_ip"`
-	ServerPort int    `json:"server_port"`
-}
+var nClient naming_client.INamingClient
+var once sync.Once
 
-func (c *Config) Register(serviceIp string, servicePort int, serviceName string) error {
-	path := "/nacos/v1/ns/instance"
-	url := fmt.Sprintf("http://%s:%d%s?port=%d&healthy=true&ip=%s&weight=1.0&serviceName=%s&encoding=GBK&namespaceId=&ephemeral=false", c.ServerIp, c.ServerPort, path, servicePort, serviceIp, serviceName)
-	_, code, err := httputils.HttpPost(url, nil, nil)
-	if err != nil || code != http.StatusOK {
+// 注册nacos服务
+func Regist(config Config) (err error) {
+	once.Do(func() {
+		nClient, err = clients.NewNamingClient(
+			vo.NacosClientParam{
+				ClientConfig: &constant.ClientConfig{
+					Username:            config.Username,
+					Password:            config.Password,
+					NamespaceId:         config.NamespaceId, //namespace id
+					TimeoutMs:           5000,
+					NotLoadCacheAtStart: true,
+					LogDir:              "./log",
+					CacheDir:            "./nacos/cache",
+					//RotateTime:          "1h",
+					//MaxAge:              3,
+					LogLevel: "info",
+				},
+				ServerConfigs: []constant.ServerConfig{
+					{
+						IpAddr: config.ServerIp,
+						Port:   config.ServerPort,
+					},
+				},
+			},
+		)
 		if err != nil {
-			logger.Logger.Error("service register to nacos", zap.Error(err))
+			return
 		}
-		return errors.New("error")
-	}
-	return nil
+		var b bool
+		b, err = nClient.RegisterInstance(vo.RegisterInstanceParam{
+			Ip:          config.ClientIp,
+			Port:        config.ClientPort,
+			Enable:      true,
+			Healthy:     true,
+			Weight:      10,
+			Metadata:    config.Metadata,
+			ServiceName: config.ServiceName,
+			GroupName:   config.GroupName,
+			//ClusterName: "default",
+			Ephemeral: true,
+		})
+		if err != nil {
+			return
+		}
+		if b != true {
+			err = errors.New("nacos注册失败")
+			return
+		}
+		return
+	})
+	return
 }
 
-type ClientHost struct {
-	Valid      bool        `json:"valid"`
-	Marked     bool        `json:"marked"`
-	InstanceId string      `json:"instanceId"`
-	Port       int         `json:"port"`
-	Ip         string      `json:"ip"`
-	Weight     float64     `json:"weight"`
-	Metadata   interface{} `json:"metadata"`
+// 注册nacos服务
+func RegisterWithMultiServer(config ConfigMultiServer) (err error) {
+	if len(config.Servers) == 0 {
+		return errors.New("servers not be empty")
+	}
+	once.Do(func() {
+		cfg := vo.NacosClientParam{
+			ClientConfig: &constant.ClientConfig{
+				Username:            config.Username,
+				Password:            config.Password,
+				NamespaceId:         config.NamespaceId, //namespace id
+				TimeoutMs:           5000,
+				NotLoadCacheAtStart: true,
+				LogDir:              "./log",
+				CacheDir:            "./nacos/cache",
+				//RotateTime:          "1h",
+				//MaxAge:              3,
+				LogLevel: "debug",
+			},
+		}
+		for _, v := range config.Servers {
+			cfg.ServerConfigs = append(cfg.ServerConfigs, constant.ServerConfig{
+				IpAddr: v.ServerIp,
+				Port:   v.ServerPort,
+			})
+		}
+		nClient, err = clients.NewNamingClient(cfg)
+		if err != nil {
+			return
+		}
+		var b bool
+		b, err = nClient.RegisterInstance(vo.RegisterInstanceParam{
+			Ip:          config.ClientIp,
+			Port:        config.ClientPort,
+			Enable:      true,
+			Healthy:     true,
+			Weight:      10,
+			Metadata:    config.Metadata,
+			ServiceName: config.ServiceName,
+			GroupName:   config.GroupName,
+			//ClusterName: "default",
+			Ephemeral: true,
+		})
+		if err != nil {
+			return
+		}
+		if b != true {
+			err = errors.New("nacos注册失败")
+			return
+		}
+		return
+	})
+	return
 }
 
-type Result struct {
-	Dom             string       `json:"dom"`
-	CacheMillis     int          `json:"cacheMillis"`
-	UseSpecifiedURL bool         `json:"useSpecifiedURL"`
-	Checksum        string       `json:"checksum"`
-	LastRefTime     int          `json:"lastRefTime"`
-	Env             string       `json:"env"`
-	Clusters        string       `json:"clusters"`
-	Hosts           []ClientHost `json:"hosts"`
-}
-
-// Resolve 返回http://ip:port
-func (c *Config) Resolve(serviceName string) string {
-	url := fmt.Sprintf("http://%s:%d/nacos/v1/ns/instance/list?serviceName=%s", c.ServerIp, c.ServerPort, serviceName)
-	data, code, err := httputils.HttpGet(url, nil)
-	if err != nil || code != http.StatusOK {
-		return ""
+// 服务解析
+// 返回http://ip:port/
+func Resolve(serviceName string) (string, error) {
+	if nClient == nil {
+		return "", errors.New("nacos未注册")
 	}
-	var result Result
-	err = json.Unmarshal(data, &result)
-	if err != nil || len(result.Hosts) == 0 {
-		return ""
+	instance, err := nClient.SelectOneHealthyInstance(vo.SelectOneHealthInstanceParam{ServiceName: serviceName})
+	if err != nil {
+		return "", err
 	}
-
-	return fmt.Sprintf("http://%s:%d", result.Hosts[0].Ip, result.Hosts[0].Port)
+	return fmt.Sprintf("http://%s:%d/", instance.Ip, instance.Port), nil
 }

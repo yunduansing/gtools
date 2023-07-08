@@ -60,3 +60,11 @@ func (r *RedisCli) HSetFromStructByPip(ctx context.Context, pip *redis.Pipeliner
 	}
 	return (*pip).HSet(ctx, key, mapData)
 }
+
+func (r *RedisCli) DistLock(ctx context.Context, key string) (bool, error) {
+	return false, nil
+}
+
+func (r *RedisCli) DistUnLock(ctx context.Context, key string) (bool, error) {
+	return false, nil
+}
