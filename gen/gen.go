@@ -4,7 +4,6 @@ import (
 	"errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sony/sonyflake"
-	"github.com/yunduansing/gtools/logger"
 	"net"
 	"reflect"
 	"regexp"
@@ -108,7 +107,7 @@ func InitV2(serviceName string) {
 
 	ip, _ := lower16BitPrivateIP()
 	id := uint16(v) + ip
-	logger.Info("snow flake lower ip=", ip)
+	//logger.Info("snow flake lower ip=", ip)
 	core = sonyflake.NewSonyflake(sonyflake.Settings{
 		//StartTime: time.Now(),
 		MachineID: func() (uint16, error) {

@@ -1,9 +1,16 @@
 package logger
 
+import "sync"
+
 type Config struct {
-	Level    string `json:",default=info,options=debug|info|warn|error|panic|fatal"`
-	FileName string `json:",optional"`
-	LogType  string `json:",default=logrus,options=logrus|zap,optional"`
+	Level       string `json:",default=info,options=debug|info|warn|error|panic|fatal"` //日志级别，默认为info
+	FilePath    string `json:",default=/log,optional"`                                  //日志文件路径
+	LogType     string `json:",default=zap,options=logrus|zap,optional"`                //日志类型，目前支持zap和logrus
+	ServiceName string `json:",optional"`                                               //所属服务
+	MaxSize     int    `json:",default=10,optional"`                                    //日志文件最大数量
+	MaxAge      int    `json:",default=30,optional"`                                    //最大保留天数
+	BackupNum   int    `json:",default=100,optional"`                                   //最大保留日志文件数量
+	Compress    bool   `json:",default=false,optional"`                                 //是否压缩
 }
 
 type LogLevel int
@@ -17,7 +24,15 @@ const (
 	LevelDebug LogLevel = 6
 )
 
-var logger ILog
+type KeyPair struct {
+	Key string      `json:"key"`
+	Val interface{} `json:"val"`
+}
+
+var (
+	logger ILog
+	once   sync.Once
+)
 
 func InitLog(c Config) {
 	switch c.LogType {
@@ -26,37 +41,56 @@ func InitLog(c Config) {
 	case "zap":
 		logger = newZapLog(c)
 	default:
-		logger = newLogrusLog(c)
+		logger = newZapLog(c)
 	}
 }
 
+func getLogger() ILog {
+	if logger == nil {
+		once.Do(func() {
+			logger = newZapLog(Config{
+				Level:       "info",
+				FilePath:    "log",
+				LogType:     "zap",
+				ServiceName: "",
+			})
+		})
+	}
+	return logger
+}
+
 func Info(v ...interface{}) {
-	logger.Info(v)
+	getLogger().info(v...)
 }
 func Infof(format string, v ...interface{}) {
-	logger.Infof(format, v)
+	getLogger().infof(format, v)
 }
 func Error(v ...interface{}) {
-	logger.Error(v)
+	getLogger().error(v...)
 }
 func Errorf(format string, v ...interface{}) {
-	logger.Errorf(format, v)
+	getLogger().errorf(format, v)
 }
 func Panic(v ...interface{}) {
-	logger.Panic(v)
+	getLogger().panic(v...)
 }
 func Panicf(format string, v ...interface{}) {
-	logger.Panicf(format, v)
+	getLogger().panicf(format, v)
 }
 func Warn(v ...interface{}) {
-	logger.Warn(v)
+	getLogger().warn(v...)
 }
 func Warnf(format string, v ...interface{}) {
-	logger.Warnf(format, v)
+	getLogger().warnf(format, v)
 }
 func Debug(v ...interface{}) {
-	logger.Debug(v)
+	getLogger().debug(v...)
 }
 func Debugf(format string, v ...interface{}) {
-	logger.Debugf(format, v)
+	getLogger().debugf(format, v)
+}
+
+func Close(f func()) {
+	f()
+	getLogger().close()
 }

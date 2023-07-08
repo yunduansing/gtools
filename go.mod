@@ -5,8 +5,10 @@ go 1.18
 require (
 	github.com/Shopify/sarama v1.37.2
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/prometheus/client_golang v1.13.0
+	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.9.0
@@ -19,9 +21,11 @@ require (
 	go.opentelemetry.io/otel/trace v1.10.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/gorm v1.23.10
+	gorm.io/plugin/soft_delete v1.2.1
 )
 
 require (
@@ -48,9 +52,12 @@ require (
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
+	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
