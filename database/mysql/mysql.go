@@ -16,8 +16,8 @@ type Config struct {
 	Username string //mysql user
 	Password string //mysql pwd
 	DbName   string //db name
-	MaxConn  int    //最大连接数
-	IdleConn int    //空闲时连接数
+	MaxConn  int    //最大连接数 默认200
+	IdleConn int    //空闲时连接数 默认20
 	LogFile  string `json:",default=log/db"`
 }
 
