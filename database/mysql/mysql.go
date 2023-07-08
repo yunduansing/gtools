@@ -2,17 +2,12 @@ package mysqltool
 
 import (
 	"fmt"
-<<<<<<< HEAD
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
 	"time"
-=======
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
->>>>>>> c6d3346bd137c03384624488a5a1970b5eb2cd49
 )
 
 type Config struct {
@@ -20,7 +15,6 @@ type Config struct {
 	Port     int    //mysql port
 	Username string //mysql user
 	Password string //mysql pwd
-<<<<<<< HEAD
 	DbName   string //db name
 	MaxConn  int    //最大连接数
 	IdleConn int    //空闲时连接数
@@ -85,8 +79,7 @@ func NewMySQLFromConnString(ds string) (*gorm.DB, error) {
 			return nil, err
 		}
 	}
-=======
-	DbName   string
+	return db, nil
 }
 
 // NewMySQL 创建gorm mysql DB
@@ -100,6 +93,5 @@ func NewMySQL(c *Config) (*gorm.DB, error) {
 // NewMySQLByDS 创建gorm mysql DB
 func NewMySQLByDS(ds string) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(ds), &gorm.Config{})
->>>>>>> c6d3346bd137c03384624488a5a1970b5eb2cd49
 	return db, err
 }
