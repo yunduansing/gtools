@@ -2,18 +2,19 @@ package localmsg
 
 import (
 	"encoding/json"
-	"github.com/yunduansing/gtools/gen"
+	"github.com/yunduansing/gtools/utils"
 )
 
 type MsgQueue struct {
-
 }
+
 //同步发送
-func (m *MsgQueue) SendAsync(msg MsgData)  {
+func (m *MsgQueue) SendAsync(msg MsgData) {
 
 }
+
 //异步发送
-func (m *MsgQueue) SendSync(msg MsgData)  {
+func (m *MsgQueue) SendSync(msg MsgData) {
 
 }
 
@@ -26,24 +27,24 @@ type MsgType int
 
 //local msg data struct
 type MsgData struct {
-	Type MsgType
-	Data interface{} //msg data
-	Timestamp int64 //unit timestamp
+	Type      MsgType
+	Data      interface{} //msg data
+	Timestamp int64       //unit timestamp
 }
 
-func (msg MsgData) String() (string,error) {
-	bs,err:=json.Marshal(msg)
-	if err!=nil{
+func (msg MsgData) String() (string, error) {
+	bs, err := json.Marshal(msg)
+	if err != nil {
 		return "", err
 	}
-	return gen.ByteToString(bs),nil
+	return utils.ByteToString(bs), nil
 }
 
 func (msg MsgData) GetData(val interface{}) error {
-	bs,err:=json.Marshal(msg)
-	if err!=nil{
+	bs, err := json.Marshal(msg)
+	if err != nil {
 		return err
 	}
-	err=json.Unmarshal(bs,val)
+	err = json.Unmarshal(bs, val)
 	return err
 }
