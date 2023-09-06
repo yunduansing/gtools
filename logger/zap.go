@@ -51,52 +51,47 @@ func getMsg(v ...interface{}) string {
 
 func (log *zapLog) info(v ...interface{}) {
 	msg := getMsg(v)
-	log.Info(msg)
+	log.Info(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) infof(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Info(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) error(v ...interface{}) {
 	msg := getMsg(v)
-	log.Error(msg)
+	log.Error(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) errorf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Error(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) panic(v ...interface{}) {
 	msg := getMsg(v)
-	log.Panic(msg)
+	log.Panic(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) panicf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Panic(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) warn(v ...interface{}) {
 	msg := getMsg(v)
-	log.Warn(msg)
+	log.Warn(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) warnf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Warn(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) debug(v ...interface{}) {
 	msg := getMsg(v)
-	log.Debug(msg)
+	log.Debug(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) debugf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Debug(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func newZapLog(c Config) *zapLog {

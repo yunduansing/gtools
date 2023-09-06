@@ -2,8 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
-	"strconv"
+	"github.com/shopspring/decimal"
 	"time"
 )
 
@@ -12,20 +11,20 @@ var (
 )
 
 func YuanToFenNoErr(m string) int64 {
-	d, _ := strconv.ParseFloat(m, 64)
-	return int64(d * 100)
+	d, _ := decimal.NewFromString(m)
+	return d.Mul(decimal.NewFromInt(100)).IntPart()
 }
 
 func YuanToFen(m string) (int64, error) {
-	d, err := strconv.ParseFloat(m, 64)
+	d, err := decimal.NewFromString(m)
 	if err != nil {
 		return 0, err
 	}
-	return int64(d * 100), nil
+	return d.Mul(decimal.NewFromInt(100)).IntPart(), nil
 }
 
 func FenInt64ToYuanStr(m int64) string {
-	return fmt.Sprintf("%.2f", float64(m)/100.0)
+	return decimal.NewFromInt(m).Div(decimal.NewFromInt(100)).StringFixed(2)
 }
 
 // TimeToChineseStr 2006-01-02 13:14:05

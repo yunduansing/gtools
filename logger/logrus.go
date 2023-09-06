@@ -1,11 +1,14 @@
 package logger
 
 import (
+	"fmt"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
+	"github.com/yunduansing/gtools/utils"
 	"os"
 	"path"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -25,64 +28,120 @@ func (l *logrusLog) close() {
 	}
 }
 
-func getLogrusMsg(v ...interface{}) string {
+func getLogrusMsg(l *logrusLog, v ...interface{}) string {
 	//list := v.([]interface{})
 	var msg strings.Builder
+
+	var errList []error
 	for _, item := range v {
-		contentItem := getLogContent(item)
-		msg.WriteString(contentItem + " ")
+
+		switch e := item.(type) {
+		case error:
+			errList = append(errList, e)
+		default:
+			contentItem := getLogContent(item)
+			msg.WriteString(contentItem + " ")
+		}
 	}
+
+	//for _, e := range errList {
+	//	msg.WriteString(e.Error() + "\n")
+	//	msg.WriteString("\n")
+	//	stack := debug.Stack()
+	//	fmt.Fprintln(l.Writer(), string(stack))
+	//}
 	return msg.String()
 }
 
+func getLogrusErrorEntry(l *logrusLog, content interface{}) *logrus.Entry {
+	switch e := content.(type) {
+	case error:
+		return l.WithError(e)
+	}
+	return nil
+}
+
+func getLogrusEntry(l *logrusLog, v ...interface{}) *logrus.Entry {
+	for _, item := range v {
+		res := getLogrusErrorEntry(l, item)
+		if res != nil {
+			return res
+		}
+	}
+	return l.WithTime(time.Now())
+}
+
+// 获取错误堆栈信息
+func getErrorStack(l *logrusLog, err error) string {
+	var stack strings.Builder
+	for {
+		if err != nil {
+			stack.WriteString(err.Error())
+			stack.WriteString("\n")
+		}
+		debugStack := debug.Stack()
+		if debugStack != nil {
+			fmt.Fprint(l.Out, stack)
+			//stack.WriteString(string(debugStack))
+		}
+		if err == nil {
+			break
+		}
+		cause, ok := err.(interface{ Causes() []error })
+		if !ok {
+			break
+		}
+		if len(cause.Causes()) == 0 {
+			break
+		}
+		err = cause.Causes()[0]
+	}
+	return stack.String()
+}
+
 func (l *logrusLog) info(v ...interface{}) {
-	logMsg := getLogrusMsg(v...)
+	logMsg := getLogrusMsg(l, v...)
 	l.Info(logMsg)
 }
 
 func (l *logrusLog) infof(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	l.Infof(format, v...)
 }
 
 func (l *logrusLog) error(v ...interface{}) {
-	logMsg := getLogrusMsg(v...)
-	l.Error(logMsg)
+	logMsg := getLogrusMsg(l, v...)
+	getLogrusEntry(l, v...).Error(logMsg)
 }
 
 func (l *logrusLog) errorf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	l.Errorf(format, v...)
 }
 
 func (l *logrusLog) panic(v ...interface{}) {
-	logMsg := getLogrusMsg(v...)
+	logMsg := getLogrusMsg(l, v...)
 	l.Panic(logMsg)
 }
 
 func (l *logrusLog) panicf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	l.Panicf(format, v...)
 }
 
 func (l *logrusLog) warn(v ...interface{}) {
-	logMsg := getLogrusMsg(v...)
+	logMsg := getLogrusMsg(l, v...)
 	l.Warn(logMsg)
 }
 
 func (l *logrusLog) warnf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	l.Warnf(format, v...)
 }
 
 func (l *logrusLog) debug(v ...interface{}) {
-	logMsg := getLogrusMsg(v...)
+	logMsg := getLogrusMsg(l, v...)
 	l.Debug(logMsg)
 }
 
 func (l *logrusLog) debugf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	l.Debugf(format, v...)
 }
 
 type DefaultFieldHook struct {
@@ -92,6 +151,15 @@ type DefaultFieldHook struct {
 func (hook *DefaultFieldHook) Fire(entry *logrus.Entry) error {
 	if len(hook.c.ServiceName) > 0 {
 		entry.Data["service"] = hook.c.ServiceName
+		entry.Data["logId"] = utils.UUID()
+	}
+
+	if e, found := entry.Data[logrus.ErrorKey]; found {
+		if _, ok := e.(error); ok {
+			stack := debug.Stack()
+			fmt.Fprintln(entry.Logger.Out, string(stack))
+		}
+
 	}
 
 	return nil
@@ -104,27 +172,12 @@ func (hook *DefaultFieldHook) Levels() []logrus.Level {
 func newLogrusLog(c Config) *logrusLog {
 	log := logrus.New()
 	log.SetLevel(getLogrusLevel(c.Level))
-	log.SetFormatter(&logrus.JSONFormatter{})
-	log.SetReportCaller(true)
+	log.SetFormatter(&logrus.TextFormatter{})
+	//log.SetReportCaller(true)
 	log.AddHook(&DefaultFieldHook{c})
-	//f, err := os.OpenFile(fmt.Sprintf("%s/info.log", c.FilePath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	//if err != nil {
-	//	fmt.Println("Failed to create logfile" + "info.log")
-	//	panic(err)
-	//}
-	//fErr, err := os.OpenFile(fmt.Sprintf("%s/error.log", c.FilePath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	//if err != nil {
-	//	fmt.Println("Failed to create logfile" + "error.log")
-	//	panic(err)
-	//}
-	//log.Out = io.MultiWriter(f, fErr, os.Stdout)
-	//log.Formatter = &easy.Formatter{
-	//	TimestampFormat: "2006-01-02 15:04:05",
-	//	LogFormat:       "[%lvl%]: %time% - %msg%\n",
-	//}
 	logPath := c.FilePath
 	if len(logPath) == 0 {
-		logPath = "/log"
+		logPath = "./log"
 	}
 	lfHook := lfshook.NewHook(lfshook.WriterMap{
 		logrus.DebugLevel: logWriter(logPath, "info", c.MaxAge, c.BackupNum), // 为不同级别设置不同的输出目的
@@ -133,16 +186,17 @@ func newLogrusLog(c Config) *logrusLog {
 		logrus.ErrorLevel: logWriter(logPath, "error", c.MaxAge, c.BackupNum),
 		logrus.FatalLevel: logWriter(logPath, "error", c.MaxAge, c.BackupNum),
 		logrus.PanicLevel: logWriter(logPath, "error", c.MaxAge, c.BackupNum),
-	}, &logrus.JSONFormatter{})
+	}, &logrus.TextFormatter{})
+
 	log.AddHook(lfHook)
 	return &logrusLog{Logger: log}
 }
 
 func logWriter(logPath string, level string, maxAge, backupNum int) *rotatelogs.RotateLogs {
 	logFullPath := path.Join(logPath, level)
-	logwriter, err := rotatelogs.New(
-		logFullPath+".%Y%m%d",
-		rotatelogs.WithLinkName(logFullPath),                      // 生成软链，指向最新日志文件
+	rotateLogs, err := rotatelogs.New(
+		logFullPath+".log",
+		rotatelogs.WithLinkName(logFullPath+".log"),               // 生成软链，指向最新日志文件
 		rotatelogs.WithRotationCount(uint(backupNum)),             // 文件最大保存份数
 		rotatelogs.WithRotationTime(24*time.Hour),                 // 日志切割时间间隔
 		rotatelogs.WithMaxAge(time.Duration(maxAge)*time.Hour*24), //保留天数
@@ -150,7 +204,7 @@ func logWriter(logPath string, level string, maxAge, backupNum int) *rotatelogs.
 	if err != nil {
 		panic(err)
 	}
-	return logwriter
+	return rotateLogs
 }
 
 func getLogrusLevel(level string) logrus.Level {
