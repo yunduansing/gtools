@@ -44,7 +44,7 @@ func StringToChineseTime(str string) (time.Time, error) {
 	return t, err
 }
 
-func ToJson(v interface{}) string {
+func ToJsonString(v interface{}) string {
 	bytes, _ := json.Marshal(v)
 	return gen.ByteToString(bytes)
 }

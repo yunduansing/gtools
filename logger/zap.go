@@ -117,7 +117,7 @@ func getLogContent(content interface{}) string {
 		if v.Integer > 0 {
 			return fmt.Sprintf("%s:%d", v.Key, v.Integer)
 		} else if v.Interface != nil {
-			return fmt.Sprintf("%s:%s", v.Key, utils.ToJson(v.Interface))
+			return fmt.Sprintf("%s:%s", v.Key, utils.ToJsonString(v.Interface))
 		}
 		return fmt.Sprintf("%s:%s", v.Key, v.String)
 	case KeyPair:
@@ -125,9 +125,9 @@ func getLogContent(content interface{}) string {
 		case int64, int, int32, float64, float32, bool:
 			return fmt.Sprintf("%s:", v.Key) + fmt.Sprint(v.Val)
 		}
-		return fmt.Sprintf("%s:%s", v.Key, utils.ToJson(v.Val))
+		return fmt.Sprintf("%s:%s", v.Key, utils.ToJsonString(v.Val))
 	}
-	return utils.ToJson(content)
+	return utils.ToJsonString(content)
 }
 
 func InitLogger() {
