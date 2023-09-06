@@ -20,7 +20,7 @@ func TestInfo(t *testing.T) {
 	})
 	req := Req{1, "234234234uljfljrlerj"}
 	Info("gtools测试info级别日志", zap.String("method", "logger.TestInfo"), zap.Any("req", req))
-	Debug("gtools测试debug级别日志", zap.String("method", "logger.TestInfo"), zap.Any("req", req))
+	Debugf("gtools测试debug级别日志 req=%+v", req)
 	Error("gtools测试error级别日志", req, testReqHttp())
 }
 

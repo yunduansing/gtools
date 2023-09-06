@@ -142,9 +142,9 @@ func getLogWriter(c Config) *zap.Logger {
 	var coreArr []zapcore.Core
 
 	//获取编码器
-	encoderConfig := zap.NewProductionEncoderConfig()            //NewJSONEncoder()输出json格式，NewConsoleEncoder()输出普通文本格式
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder        //指定时间格式
-	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
+	encoderConfig := zap.NewProductionEncoderConfig()                               //NewJSONEncoder()输出json格式，NewConsoleEncoder()输出普通文本格式
+	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(utils.ChineseTimeLayout) //指定时间格式
+	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder                    //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
 	//encoderConfig.EncodeCaller = zapcore.FullCallerEncoder      	//显示完整文件路径
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
 

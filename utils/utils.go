@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	TimeLayout = "2006-01-02 13:14:05"
+	ChineseTimeLayout = "2006-01-02 15:04:05"
 )
 
 func YuanToFenNoErr(m string) int64 {
@@ -29,16 +29,16 @@ func FenInt64ToYuanStr(m int64) string {
 
 // TimeToChineseStr 2006-01-02 13:14:05
 func TimeToChineseStr(t time.Time) string {
-	return t.Format(TimeLayout)
+	return t.Format(ChineseTimeLayout)
 }
 
 func StringToTimeNoErr(str string) time.Time {
-	t, _ := time.Parse(TimeLayout, str)
+	t, _ := time.Parse(ChineseTimeLayout, str)
 	return t
 }
 
 func StringToChineseTime(str string) (time.Time, error) {
-	t, err := time.Parse(TimeLayout, str)
+	t, err := time.Parse(ChineseTimeLayout, str)
 	return t, err
 }
 
