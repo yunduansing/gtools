@@ -2,8 +2,8 @@ package mysqltool
 
 import (
 	"fmt"
-	"github.com/yunduansing/gtools/gen"
 	"github.com/yunduansing/gtools/logger"
+	"github.com/yunduansing/gtools/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"math"
@@ -67,7 +67,7 @@ func orderUpdateState(db *gorm.DB) {
 
 func createManyOrder(db *gorm.DB) {
 	m := Order{
-		OrderId:        fmt.Sprint(gen.Uint64()),
+		OrderId:        fmt.Sprint(utils.Uint64()),
 		UserId:         1,
 		Amount:         200,
 		Freight:        0,
@@ -76,7 +76,7 @@ func createManyOrder(db *gorm.DB) {
 	}
 	var src = rand.NewSource(math.MaxInt)
 	for i := 0; i < 300; i++ {
-		m.OrderId = fmt.Sprint(gen.Uint64())
+		m.OrderId = fmt.Sprint(utils.Uint64())
 		m.UserId = int64(rand.New(src).Intn(20)) + 1
 		m.Amount = int64(rand.New(src).Intn(15000))
 		m.State = rand.New(src).Intn(3)
