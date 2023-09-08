@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 )
 
@@ -18,7 +19,7 @@ func Init(c ClientConfig) (*grpc.ClientConn, error) {
 	if c.Port > 0 {
 		target += ":" + fmt.Sprint(c.Port)
 	}
-	conn, err := grpc.Dial(target)
+	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	return conn, err
 }
 

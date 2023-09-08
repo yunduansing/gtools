@@ -51,52 +51,47 @@ func getMsg(v ...interface{}) string {
 
 func (log *zapLog) info(v ...interface{}) {
 	msg := getMsg(v)
-	log.Info(msg)
+	log.Info(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) infof(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Info(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) error(v ...interface{}) {
 	msg := getMsg(v)
-	log.Error(msg)
+	log.Error(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) errorf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Error(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) panic(v ...interface{}) {
 	msg := getMsg(v)
-	log.Panic(msg)
+	log.Panic(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) panicf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Panic(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) warn(v ...interface{}) {
 	msg := getMsg(v)
-	log.Warn(msg)
+	log.Warn(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) warnf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Warn(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) debug(v ...interface{}) {
 	msg := getMsg(v)
-	log.Debug(msg)
+	log.Debug(msg, zap.String("logId", utils.UUID()))
 }
 
 func (log *zapLog) debugf(format string, v ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+	log.Debug(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
 }
 
 func newZapLog(c Config) *zapLog {
@@ -147,9 +142,9 @@ func getLogWriter(c Config) *zap.Logger {
 	var coreArr []zapcore.Core
 
 	//获取编码器
-	encoderConfig := zap.NewProductionEncoderConfig()            //NewJSONEncoder()输出json格式，NewConsoleEncoder()输出普通文本格式
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder        //指定时间格式
-	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
+	encoderConfig := zap.NewProductionEncoderConfig()                               //NewJSONEncoder()输出json格式，NewConsoleEncoder()输出普通文本格式
+	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(utils.ChineseTimeLayout) //指定时间格式
+	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder                    //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
 	//encoderConfig.EncodeCaller = zapcore.FullCallerEncoder      	//显示完整文件路径
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
 

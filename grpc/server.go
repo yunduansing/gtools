@@ -2,9 +2,9 @@ package grpctool
 
 import (
 	"fmt"
+	"github.com/yunduansing/gtools/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"log"
 	"net"
 )
 
@@ -36,8 +36,8 @@ func RunWithTls(c ServerConfig, servers ...GrpcServerHandler) error {
 	for _, f := range servers {
 		f(s)
 	}
-	fmt.Printf("server listening at %v \n", lis.Addr())
-	log.Printf("server listening at %v", lis.Addr())
+
+	logger.Info("server listening at %v", lis.Addr())
 	err = s.Serve(lis)
 	return err
 }
@@ -52,8 +52,7 @@ func Run(c ServerConfig, servers ...GrpcServerHandler) error {
 	for _, f := range servers {
 		f(s)
 	}
-	fmt.Printf("server listening at %v \n", lis.Addr())
-	log.Printf("server listening at %v", lis.Addr())
+	logger.Info("server listening at %v", lis.Addr())
 	err = s.Serve(lis)
 	return err
 }
