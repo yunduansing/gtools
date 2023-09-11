@@ -14,17 +14,18 @@ type ClientConfig struct {
 	ServerPem string
 }
 
-func Init(c ClientConfig) (*grpc.ClientConn, error) {
+func Init(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	target := c.Address
 	if c.Port > 0 {
 		target += ":" + fmt.Sprint(c.Port)
 	}
-	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(target, opts...)
 	return conn, err
 }
 
-func InitWithTls(c ClientConfig) (*grpc.ClientConn, error) {
-	var opts []grpc.DialOption
+func InitWithTls(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+
 	//no tls grpc.WithTransportCredentials(insecure.NewCredentials())
 	cre, err := credentials.NewClientTLSFromFile(c.ServerPem, "go-grpc-example")
 	if err != nil {
