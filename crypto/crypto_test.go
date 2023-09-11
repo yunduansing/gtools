@@ -2,7 +2,7 @@ package crypto
 
 import (
 	"fmt"
-	"gatewayservice/common/gen"
+	"github.com/yunduansing/gtools/gen"
 	"testing"
 )
 
