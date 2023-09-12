@@ -37,7 +37,7 @@ func RunWithTls(c ServerConfig, servers ...GrpcServerHandler) error {
 		f(s)
 	}
 
-	logger.Info("server listening at %v", lis.Addr())
+	logger.Infof("rpc server listening at %+v", lis.Addr())
 	err = s.Serve(lis)
 	return err
 }
@@ -52,7 +52,7 @@ func Run(c ServerConfig, servers ...GrpcServerHandler) error {
 	for _, f := range servers {
 		f(s)
 	}
-	logger.Info("server listening at %v", lis.Addr())
+	logger.Infof("rpc server listening at %+v", lis.Addr())
 	err = s.Serve(lis)
 	return err
 }
