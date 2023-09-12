@@ -2,10 +2,10 @@ package grpctool
 
 import (
 	"fmt"
+	"github.com/yunduansing/gtools/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 )
 
 type ClientConfig struct {
@@ -19,20 +19,28 @@ func Init(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if c.Port > 0 {
 		target += ":" + fmt.Sprint(c.Port)
 	}
-	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts = append(opts, grpc.WithBlock())
 	conn, err := grpc.Dial(target, opts...)
 	return conn, err
+}
+
+func WithClientNoCredentials() grpc.DialOption {
+	return grpc.WithTransportCredentials(insecure.NewCredentials())
+}
+
+func WithClientTlsCredentials(cre credentials.TransportCredentials) grpc.DialOption {
+	return grpc.WithTransportCredentials(cre)
 }
 
 func InitWithTls(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 
 	//no tls grpc.WithTransportCredentials(insecure.NewCredentials())
-	cre, err := credentials.NewClientTLSFromFile(c.ServerPem, "go-grpc-example")
+	cre, err := credentials.NewClientTLSFromFile(c.ServerPem, "")
 	if err != nil {
-		log.Fatalf("Failed to create TLS credentials: %v", err)
+		logger.Panicf("Failed to create TLS credentials: %v", err)
 	}
 
-	opts = append(opts, grpc.WithTransportCredentials(cre))
+	opts = append(opts, WithClientTlsCredentials(cre))
 	target := c.Address
 	if c.Port > 0 {
 		target += ":" + fmt.Sprint(c.Port)
