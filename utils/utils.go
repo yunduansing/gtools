@@ -3,7 +3,9 @@ package utils
 import (
 	"encoding/json"
 	"github.com/shopspring/decimal"
+	"reflect"
 	"time"
+	"unsafe"
 )
 
 var (
@@ -45,4 +47,23 @@ func StringToChineseTime(str string) (time.Time, error) {
 func ToJsonString(v interface{}) string {
 	bytes, _ := json.Marshal(v)
 	return ByteToString(bytes)
+}
+
+// ByteToString String and []byte buffers may converted without memory allocations
+// This is an unsafe way, the result string and []byte buffer share the same bytes.
+// Please make sure not to modify the bytes in the []byte buffer if the string still survives!
+func ByteToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+// StringToByte String and []byte buffers may converted without memory allocations
+// This is an unsafe way, the result string and []byte buffer share the same bytes.
+// Please make sure not to modify the bytes in the []byte buffer if the string still survives!
+func StringToByte(s string) (b []byte) {
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	bh.Data = sh.Data
+	bh.Cap = sh.Len
+	bh.Len = sh.Len
+	return b
 }

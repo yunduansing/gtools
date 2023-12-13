@@ -2,7 +2,7 @@ package crypto
 
 import (
 	"crypto"
-	rand2 "crypto/rand"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
@@ -10,14 +10,15 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/yunduansing/gtools/gen"
+	"github.com/youmark/pkcs8"
 	"github.com/yunduansing/gtools/utils"
+	"os"
 	"reflect"
 	"sort"
 )
 
 func getPrivateKeyFromRaw(raw string) (*rsa.PrivateKey, error) {
-	b, _ := pem.Decode(gen.StringToByte(raw))
+	b, _ := pem.Decode(utils.StringToByte(raw))
 	priKey, err := x509.ParsePKCS1PrivateKey(b.Bytes)
 	return priKey, err
 }
@@ -33,8 +34,8 @@ func SignRsaSHA256(privateKey string, data interface{}) (string, error) {
 	}
 	//hash := sha256.New()
 	//hash.Write(gen.StringToByte(signData))
-	h := sha256.Sum256(gen.StringToByte(signData))
-	sign, err := rsa.SignPKCS1v15(rand2.Reader, priKey, crypto.SHA256, h[:])
+	h := sha256.Sum256(utils.StringToByte(signData))
+	sign, err := rsa.SignPKCS1v15(rand.Reader, priKey, crypto.SHA256, h[:])
 	return hex.EncodeToString(sign), err
 }
 
@@ -51,7 +52,7 @@ func VerifySignRsaSha256(key, sign string, data interface{}) (bool, error) {
 	//hash.Write(gen.StringToByte(signData))
 	//signDataHashed := hash.Sum(nil)
 	signature, _ := hex.DecodeString(sign)
-	h := sha256.Sum256(gen.StringToByte(signData))
+	h := sha256.Sum256(utils.StringToByte(signData))
 	err = rsa.VerifyPKCS1v15(&priKey.PublicKey, crypto.SHA256, h[:], signature)
 	if err != nil {
 		return false, err
@@ -104,4 +105,37 @@ func getFieldValueString(i interface{}) string {
 		return utils.ToJsonString(i)
 	}
 	return ""
+}
+
+func EncryptRsaPrivateKey() {
+	// Generate a new private key
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// Define the encryption password
+	password := "your-password"
+
+	// Convert the private key to PKCS8
+	pkcs8Key, err := pkcs8.ConvertPrivateKeyToPKCS8(privateKey)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// Encrypt the PKCS8 private key
+	encryptedKey, err := pkcs8.EncryptPKCS8PrivateKey(pkcs8Key, password, pkcs8.PBKDF2Count, x509.PEMCipherAES256)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// Write the encrypted private key to a file
+	err = os.WriteFile("encrypted_private_key.pem", encryptedKey, 0600)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

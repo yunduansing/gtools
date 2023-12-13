@@ -15,7 +15,7 @@ func TestInfo(t *testing.T) {
 	InitLog(Config{
 		LogType:     "zap",
 		ServiceName: "gtools-zap-log-test",
-		Level:       "debug",
+		Level:       "Debug",
 		FilePath:    "./log",
 	})
 	req := Req{1, "234234234uljfljrlerj"}

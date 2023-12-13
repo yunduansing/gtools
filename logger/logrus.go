@@ -15,8 +15,9 @@ import (
 
 type logrusLog struct {
 	*logrus.Logger
-	fErr  *os.File
-	fInfo *os.File
+	fErr   *os.File
+	fInfo  *os.File
+	fields []KeyPair
 }
 
 func (l *logrusLog) close() {
@@ -47,7 +48,7 @@ func getLogrusMsg(l *logrusLog, v ...interface{}) string {
 	//for _, e := range errList {
 	//	msg.WriteString(e.Error() + "\n")
 	//	msg.WriteString("\n")
-	//	stack := debug.Stack()
+	//	stack := Debug.Stack()
 	//	fmt.Fprintln(l.Writer(), string(stack))
 	//}
 	return msg.String()
@@ -99,49 +100,103 @@ func getErrorStack(l *logrusLog, err error) string {
 	return stack.String()
 }
 
-func (l *logrusLog) info(v ...interface{}) {
+func (log *logrusLog) WithField(field, value string) {
+	log.fields = append(log.fields, KeyPair{field, value})
+}
+
+func (l *logrusLog) Info(v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
-	l.Info(logMsg)
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Info(logMsg)
 }
 
-func (l *logrusLog) infof(format string, v ...interface{}) {
-	l.Infof(format, v...)
+func (l *logrusLog) Infof(format string, v ...interface{}) {
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Infof(format, v...)
 }
 
-func (l *logrusLog) error(v ...interface{}) {
+func (l *logrusLog) Error(v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
-	getLogrusEntry(l, v...).Error(logMsg)
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Error(logMsg)
 }
 
-func (l *logrusLog) errorf(format string, v ...interface{}) {
-	l.Errorf(format, v...)
+func (l *logrusLog) Errorf(format string, v ...interface{}) {
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Errorf(format, v...)
 }
 
-func (l *logrusLog) panic(v ...interface{}) {
+func (l *logrusLog) Panic(v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
-	l.Panic(logMsg)
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Panic(logMsg)
 }
 
-func (l *logrusLog) panicf(format string, v ...interface{}) {
-	l.Panicf(format, v...)
+func (l *logrusLog) Panicf(format string, v ...interface{}) {
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Panicf(format, v...)
 }
 
-func (l *logrusLog) warn(v ...interface{}) {
+func (l *logrusLog) Warn(v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
-	l.Warn(logMsg)
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Warn(logMsg)
 }
 
-func (l *logrusLog) warnf(format string, v ...interface{}) {
-	l.Warnf(format, v...)
+func (l *logrusLog) Warnf(format string, v ...interface{}) {
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Warnf(format, v...)
 }
 
-func (l *logrusLog) debug(v ...interface{}) {
+func (l *logrusLog) Debug(v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
-	l.Debug(logMsg)
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Debug(logMsg)
 }
 
-func (l *logrusLog) debugf(format string, v ...interface{}) {
-	l.Debugf(format, v...)
+func (l *logrusLog) Debugf(format string, v ...interface{}) {
+	var fields = make(map[string]interface{})
+	for _, with := range l.fields {
+		fields[with.Key] = with.Val
+	}
+	l.fields = nil
+	l.Logger.WithFields(fields).Debugf(format, v...)
 }
 
 type DefaultFieldHook struct {
@@ -180,12 +235,12 @@ func newLogrusLog(c Config) *logrusLog {
 		logPath = "./log"
 	}
 	lfHook := lfshook.NewHook(lfshook.WriterMap{
-		logrus.DebugLevel: logWriter(logPath, "info", c.MaxAge, c.BackupNum), // 为不同级别设置不同的输出目的
-		logrus.InfoLevel:  logWriter(logPath, "info", c.MaxAge, c.BackupNum),
-		logrus.WarnLevel:  logWriter(logPath, "info", c.MaxAge, c.BackupNum),
-		logrus.ErrorLevel: logWriter(logPath, "error", c.MaxAge, c.BackupNum),
-		logrus.FatalLevel: logWriter(logPath, "error", c.MaxAge, c.BackupNum),
-		logrus.PanicLevel: logWriter(logPath, "error", c.MaxAge, c.BackupNum),
+		logrus.DebugLevel: logWriter(logPath, "Info", c.MaxAge, c.BackupNum), // 为不同级别设置不同的输出目的
+		logrus.InfoLevel:  logWriter(logPath, "Info", c.MaxAge, c.BackupNum),
+		logrus.WarnLevel:  logWriter(logPath, "Info", c.MaxAge, c.BackupNum),
+		logrus.ErrorLevel: logWriter(logPath, "Error", c.MaxAge, c.BackupNum),
+		logrus.FatalLevel: logWriter(logPath, "Error", c.MaxAge, c.BackupNum),
+		logrus.PanicLevel: logWriter(logPath, "Error", c.MaxAge, c.BackupNum),
 	}, &logrus.TextFormatter{})
 
 	log.AddHook(lfHook)
@@ -209,17 +264,17 @@ func logWriter(logPath string, level string, maxAge, backupNum int) *rotatelogs.
 
 func getLogrusLevel(level string) logrus.Level {
 	switch level {
-	case "info":
+	case "Info":
 		return logrus.InfoLevel
-	case "debug":
+	case "Debug":
 		return logrus.DebugLevel
-	case "error":
+	case "Error":
 		return logrus.ErrorLevel
-	case "panic":
+	case "Panic":
 		return logrus.PanicLevel
 	case "fatal":
 		return logrus.FatalLevel
-	case "warn":
+	case "Warn":
 		return logrus.WarnLevel
 	}
 	return logrus.InfoLevel

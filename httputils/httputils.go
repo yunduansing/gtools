@@ -77,26 +77,6 @@ func HttpRequest(method, path string, headers map[string]string, body []byte) (d
 	return data, resp.StatusCode, err
 }
 
-// TransmitRequest 转发http请求
-func TransmitRequest(path string, origin *http.Request) (data []byte, statusCode int, contentType string, err error) {
-	client := &http.Client{Timeout: 30 * time.Second}
-	var req = new(http.Request)
-	req.Method = origin.Method
-	targetUrl, _ := url.Parse(path)
-	req.URL = targetUrl
-	req.Header = origin.Header
-
-	req.Body = origin.Body
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, resp.StatusCode, resp.Header.Get("Content-Type"), err
-	}
-	defer resp.Body.Close()
-	data, err = io.ReadAll(resp.Body)
-
-	return data, resp.StatusCode, resp.Header.Get("Content-Type"), err
-}
-
 func SendRequest(req *http.Request) (data []byte, statusCode int, err error) {
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)

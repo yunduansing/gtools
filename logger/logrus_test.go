@@ -8,7 +8,7 @@ func TestError(t *testing.T) {
 	InitLog(Config{
 		LogType:     "logrus",
 		ServiceName: "gtools-logrus-log-test",
-		Level:       "debug",
+		Level:       "Debug",
 		FilePath:    "./log/",
 	})
 	req := Req{1, "234234234uljfljrlerj"}

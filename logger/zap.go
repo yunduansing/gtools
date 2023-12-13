@@ -14,26 +14,33 @@ var Logger *zap.Logger
 
 type zapLog struct {
 	*zap.Logger
+	kv []KeyPair
+}
+
+func (log *zapLog) WithField(field, value string) {
+	log.kv = append(log.kv, KeyPair{
+		Key: field,
+		Val: value,
+	})
 }
 
 func (log *zapLog) close() {
-	//TODO implement me
-	panic("implement me")
+
 }
 
 func getZapLogLevel(level string) zapcore.Level {
 	switch level {
-	case "info":
+	case "Info":
 		return zapcore.InfoLevel
-	case "debug":
+	case "Debug":
 		return zapcore.DebugLevel
-	case "error":
+	case "Error":
 		return zapcore.ErrorLevel
-	case "panic":
+	case "Panic":
 		return zapcore.PanicLevel
 	case "fatal":
 		return zapcore.FatalLevel
-	case "warn":
+	case "Warn":
 		return zapcore.WarnLevel
 	}
 	return zapcore.InfoLevel
@@ -49,55 +56,106 @@ func getMsg(v ...interface{}) string {
 	return msg.String()
 }
 
-func (log *zapLog) info(v ...interface{}) {
+func (log *zapLog) Info(v ...interface{}) {
 	msg := getMsg(v)
-	log.Info(msg, zap.String("logId", utils.UUID()))
+
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Info(msg, fields...)
 }
 
-func (log *zapLog) infof(format string, v ...interface{}) {
-	log.Info(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
+func (log *zapLog) Infof(format string, v ...interface{}) {
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Info(fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) error(v ...interface{}) {
+func (log *zapLog) Error(v ...interface{}) {
 	msg := getMsg(v)
-	log.Error(msg, zap.String("logId", utils.UUID()))
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Error(msg, fields...)
 }
 
-func (log *zapLog) errorf(format string, v ...interface{}) {
-	log.Error(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
+func (log *zapLog) Errorf(format string, v ...interface{}) {
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Error(fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) panic(v ...interface{}) {
+func (log *zapLog) Panic(v ...interface{}) {
 	msg := getMsg(v)
-	log.Panic(msg, zap.String("logId", utils.UUID()))
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Panic(msg, fields...)
 }
 
-func (log *zapLog) panicf(format string, v ...interface{}) {
-	log.Panic(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
+func (log *zapLog) Panicf(format string, v ...interface{}) {
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Panic(fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) warn(v ...interface{}) {
+func (log *zapLog) Warn(v ...interface{}) {
 	msg := getMsg(v)
-	log.Warn(msg, zap.String("logId", utils.UUID()))
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Warn(msg, fields...)
 }
 
-func (log *zapLog) warnf(format string, v ...interface{}) {
-	log.Warn(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
+func (log *zapLog) Warnf(format string, v ...interface{}) {
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Warn(fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) debug(v ...interface{}) {
+func (log *zapLog) Debug(v ...interface{}) {
 	msg := getMsg(v)
-	log.Debug(msg, zap.String("logId", utils.UUID()))
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Debug(msg, fields...)
 }
 
-func (log *zapLog) debugf(format string, v ...interface{}) {
-	log.Debug(fmt.Sprintf(format, v...), zap.String("logId", utils.UUID()))
+func (log *zapLog) Debugf(format string, v ...interface{}) {
+	var fields []zap.Field
+	for _, with := range log.kv {
+		fields = append(fields, zap.Any(with.Key, with.Val))
+	}
+	log.kv = nil
+	log.Logger.Debug(fmt.Sprintf(format, v...), fields...)
 }
 
 func newZapLog(c Config) *zapLog {
 	log := getLogWriter(c)
 
-	return &zapLog{log}
+	return &zapLog{Logger: log}
 }
 
 func getLogContent(content interface{}) string {
@@ -127,7 +185,7 @@ func getLogContent(content interface{}) string {
 
 func InitLogger() {
 	Logger = getLogWriter(Config{
-		Level: "info",
+		Level: "Info",
 	})
 }
 
@@ -158,7 +216,7 @@ func getLogWriter(c Config) *zap.Logger {
 
 	//info文件writeSyncer
 	infoFileWriteSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   fmt.Sprintf("%s/info.log", c.FilePath), //日志文件存放目录，如果文件夹不存在会自动创建
+		Filename:   fmt.Sprintf("%s/Info.log", c.FilePath), //日志文件存放目录，如果文件夹不存在会自动创建
 		MaxSize:    c.MaxSize,                              //文件大小限制,单位MB
 		MaxBackups: c.BackupNum,                            //最大保留日志文件数量
 		MaxAge:     c.MaxAge,                               //日志文件保留天数
@@ -168,7 +226,7 @@ func getLogWriter(c Config) *zap.Logger {
 
 	//error文件writeSyncer
 	errorFileWriteSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   fmt.Sprintf("%s/error.log", c.FilePath), //日志文件存放目录
+		Filename:   fmt.Sprintf("%s/Error.log", c.FilePath), //日志文件存放目录
 		MaxSize:    c.MaxSize,                               //文件大小限制,单位MB
 		MaxBackups: c.BackupNum,                             //最大保留日志文件数量
 		MaxAge:     c.MaxAge,                                //日志文件保留天数
