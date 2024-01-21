@@ -14,7 +14,7 @@ var nClient naming_client.INamingClient
 var once sync.Once
 
 // 注册nacos服务
-func Regist(config Config) (err error) {
+func Register(config Config) (err error) {
 	once.Do(func() {
 		nClient, err = clients.NewNamingClient(
 			vo.NacosClientParam{
