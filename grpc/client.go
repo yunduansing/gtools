@@ -11,7 +11,7 @@ import (
 type ClientConfig struct {
 	Address   string
 	Port      int
-	ServerPem string
+	ServerPem string //tls server pem
 }
 
 func Init(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
@@ -19,8 +19,10 @@ func Init(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if c.Port > 0 {
 		target += ":" + fmt.Sprint(c.Port)
 	}
-	opts = append(opts, grpc.WithBlock())
-	conn, err := grpc.Dial(target, opts...)
+	opts = append(opts, WithClientNoCredentials())
+	//The wrong way: grpc.Dial so use NewClient func instead
+	// see:https://github.com/grpc/grpc-go/blob/master/Documentation/anti-patterns.md
+	conn, err := grpc.NewClient(target, opts...)
 	return conn, err
 }
 
@@ -37,7 +39,7 @@ func InitWithTls(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, err
 	//no tls grpc.WithTransportCredentials(insecure.NewCredentials())
 	cre, err := credentials.NewClientTLSFromFile(c.ServerPem, "")
 	if err != nil {
-		logger.Panicf("Failed to create TLS credentials: %v", err)
+		logger.Panicf(nil, "Failed to create TLS credentials: %v", err)
 	}
 
 	opts = append(opts, WithClientTlsCredentials(cre))
@@ -45,6 +47,8 @@ func InitWithTls(c ClientConfig, opts ...grpc.DialOption) (*grpc.ClientConn, err
 	if c.Port > 0 {
 		target += ":" + fmt.Sprint(c.Port)
 	}
-	conn, err := grpc.Dial(target, opts...)
+	//The wrong way: grpc.Dial so use NewClient func instead
+	// see:https://github.com/grpc/grpc-go/blob/master/Documentation/anti-patterns.md
+	conn, err := grpc.NewClient(target, opts...)
 	return conn, err
 }

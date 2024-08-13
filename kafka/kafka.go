@@ -178,7 +178,7 @@ func newSaramaClient(brokers []string) (sarama.Client, error) {
 	 */
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_8_1_0
-	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange
+	config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.BalanceStrategyRange}
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Idempotent = true
 	config.Producer.Return.Successes = false

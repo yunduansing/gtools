@@ -1,15 +1,23 @@
 package logger
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 var (
 	logger ILog
 	once   sync.Once
 )
 
+const (
+	LogTypeZap    = "zap"
+	LogTypeLogrus = "logrus"
+)
+
 func InitLog(c Config) {
 	switch c.LogType {
-	case "logrus":
+	case LogTypeLogrus:
 		logger = newLogrusLog(c)
 	//case "zap":
 	//logger = newZapLog(c)
@@ -18,7 +26,7 @@ func InitLog(c Config) {
 	}
 }
 
-func getLogger() ILog {
+func GetLogger() ILog {
 	if logger == nil {
 		once.Do(func() {
 			logger = newZapLog(Config{
@@ -32,38 +40,38 @@ func getLogger() ILog {
 	return logger
 }
 
-func Info(v ...interface{}) {
-	getLogger().Info(v...)
+func Info(ctx context.Context, v ...interface{}) {
+	GetLogger().Info(ctx, v...)
 }
-func Infof(format string, v ...interface{}) {
-	getLogger().Infof(format, v)
+func Infof(ctx context.Context, format string, v ...interface{}) {
+	GetLogger().Infof(ctx, format, v...)
 }
-func Error(v ...interface{}) {
-	getLogger().Error(v...)
+func Error(ctx context.Context, v ...interface{}) {
+	GetLogger().Error(ctx, v...)
 }
-func Errorf(format string, v ...interface{}) {
-	getLogger().Errorf(format, v)
+func Errorf(ctx context.Context, format string, v ...interface{}) {
+	GetLogger().Errorf(ctx, format, v)
 }
-func Panic(v ...interface{}) {
-	getLogger().Panic(v...)
+func Panic(ctx context.Context, v ...interface{}) {
+	GetLogger().Panic(ctx, v...)
 }
-func Panicf(format string, v ...interface{}) {
-	getLogger().Panicf(format, v)
+func Panicf(ctx context.Context, format string, v ...interface{}) {
+	GetLogger().Panicf(ctx, format, v)
 }
-func Warn(v ...interface{}) {
-	getLogger().Warn(v...)
+func Warn(ctx context.Context, v ...interface{}) {
+	GetLogger().Warn(ctx, v...)
 }
-func Warnf(format string, v ...interface{}) {
-	getLogger().Warnf(format, v)
+func Warnf(ctx context.Context, format string, v ...interface{}) {
+	GetLogger().Warnf(ctx, format, v)
 }
-func Debug(v ...interface{}) {
-	getLogger().Debug(v...)
+func Debug(ctx context.Context, v ...interface{}) {
+	GetLogger().Debug(ctx, v...)
 }
-func Debugf(format string, v ...interface{}) {
-	getLogger().Debugf(format, v)
+func Debugf(ctx context.Context, format string, v ...interface{}) {
+	GetLogger().Debugf(ctx, format, v)
 }
 
 func Close(f func()) {
 	f()
-	getLogger().close()
+	GetLogger().close()
 }

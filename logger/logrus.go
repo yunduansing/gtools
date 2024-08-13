@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
@@ -104,8 +105,12 @@ func (log *logrusLog) WithField(field, value string) {
 	log.fields = append(log.fields, KeyPair{field, value})
 }
 
-func (l *logrusLog) Info(v ...interface{}) {
+func (l *logrusLog) Info(ctx context.Context, v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
+	}
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
@@ -114,17 +119,24 @@ func (l *logrusLog) Info(v ...interface{}) {
 	l.Logger.WithFields(fields).Info(logMsg)
 }
 
-func (l *logrusLog) Infof(format string, v ...interface{}) {
+func (l *logrusLog) Infof(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
 	}
 	l.fields = nil
+	if ctx != nil && ctx.Value("requestId") != nil {
+		fields["RequestId"] = ctx.Value("requestId").(string)
+	}
 	l.Logger.WithFields(fields).Infof(format, v...)
 }
 
-func (l *logrusLog) Error(v ...interface{}) {
+func (l *logrusLog) Error(ctx context.Context, v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
+	}
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
@@ -133,17 +145,24 @@ func (l *logrusLog) Error(v ...interface{}) {
 	l.Logger.WithFields(fields).Error(logMsg)
 }
 
-func (l *logrusLog) Errorf(format string, v ...interface{}) {
+func (l *logrusLog) Errorf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
 	}
 	l.fields = nil
+	if ctx != nil && ctx.Value("requestId") != nil {
+		fields["RequestId"] = ctx.Value("requestId").(string)
+	}
 	l.Logger.WithFields(fields).Errorf(format, v...)
 }
 
-func (l *logrusLog) Panic(v ...interface{}) {
+func (l *logrusLog) Panic(ctx context.Context, v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
+	}
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
@@ -152,17 +171,24 @@ func (l *logrusLog) Panic(v ...interface{}) {
 	l.Logger.WithFields(fields).Panic(logMsg)
 }
 
-func (l *logrusLog) Panicf(format string, v ...interface{}) {
+func (l *logrusLog) Panicf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
 	}
 	l.fields = nil
+	if ctx != nil && ctx.Value("requestId") != nil {
+		fields["RequestId"] = ctx.Value("requestId").(string)
+	}
 	l.Logger.WithFields(fields).Panicf(format, v...)
 }
 
-func (l *logrusLog) Warn(v ...interface{}) {
+func (l *logrusLog) Warn(ctx context.Context, v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
+	}
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
@@ -171,17 +197,24 @@ func (l *logrusLog) Warn(v ...interface{}) {
 	l.Logger.WithFields(fields).Warn(logMsg)
 }
 
-func (l *logrusLog) Warnf(format string, v ...interface{}) {
+func (l *logrusLog) Warnf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
 	}
 	l.fields = nil
+	if ctx != nil && ctx.Value("requestId") != nil {
+		fields["RequestId"] = ctx.Value("requestId").(string)
+	}
 	l.Logger.WithFields(fields).Warnf(format, v...)
 }
 
-func (l *logrusLog) Debug(v ...interface{}) {
+func (l *logrusLog) Debug(ctx context.Context, v ...interface{}) {
 	logMsg := getLogrusMsg(l, v...)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
+	}
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
@@ -190,12 +223,15 @@ func (l *logrusLog) Debug(v ...interface{}) {
 	l.Logger.WithFields(fields).Debug(logMsg)
 }
 
-func (l *logrusLog) Debugf(format string, v ...interface{}) {
+func (l *logrusLog) Debugf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
 	for _, with := range l.fields {
 		fields[with.Key] = with.Val
 	}
 	l.fields = nil
+	if ctx != nil && ctx.Value("requestId") != nil {
+		fields["RequestId"] = ctx.Value("requestId").(string)
+	}
 	l.Logger.WithFields(fields).Debugf(format, v...)
 }
 

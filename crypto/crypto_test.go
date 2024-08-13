@@ -2,7 +2,7 @@ package crypto
 
 import (
 	"fmt"
-	"github.com/yunduansing/gtools/gen"
+	"github.com/yunduansing/gtools/utils"
 	"testing"
 )
 
@@ -13,8 +13,8 @@ func TestEncryptPwdByPbkdf2(t *testing.T) {
 }
 
 func TestGenHmacSha256(t *testing.T) {
-	k1 := GenHmacSha256(gen.UUID(), gen.UUID())
-	k2 := GenHmacSha256(gen.UUID(), gen.UUID())
-	k3 := GenHmacSha256(gen.UUID(), gen.UUID())
+	k1 := GenHmacSha256(utils.UUID(), utils.UUID())
+	k2 := GenHmacSha256(utils.UUID(), utils.UUID())
+	k3 := GenHmacSha256(utils.UUID(), utils.UUID())
 	fmt.Println(k1, k2, k3)
 }

@@ -1,4 +1,4 @@
-package redis
+package redistool
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 func TestNew(t *testing.T) {
 	cli := New(Config{
-		Addrs:    []string{"localhost:6379"},
+		Addr:     []string{"localhost:6379"},
 		Password: "pass",
 	})
 	r, err := cli.Get(context.Background(), "KEY")

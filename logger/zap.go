@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"github.com/natefinch/lumberjack"
 	"github.com/yunduansing/gtools/utils"
@@ -56,9 +57,12 @@ func getMsg(v ...interface{}) string {
 	return msg.String()
 }
 
-func (log *zapLog) Info(v ...interface{}) {
+func (log *zapLog) Info(ctx context.Context, v ...interface{}) {
 	msg := getMsg(v)
 
+	if ctx != nil && ctx.Value("requestId") != nil {
+		msg = "RequestId=" + ctx.Value("requestId").(string) + " " + msg
+	}
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
@@ -67,17 +71,25 @@ func (log *zapLog) Info(v ...interface{}) {
 	log.Logger.Info(msg, fields...)
 }
 
-func (log *zapLog) Infof(format string, v ...interface{}) {
+func (log *zapLog) Infof(ctx context.Context, format string, v ...interface{}) {
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
 	}
 	log.kv = nil
-	log.Logger.Info(fmt.Sprintf(format, v...), fields...)
+	var requestId string
+	if ctx != nil && ctx.Value("requestId") != nil {
+		requestId = "RequestId=" + ctx.Value("requestId").(string) + " "
+	}
+	log.Logger.Info(requestId+fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) Error(v ...interface{}) {
+func (log *zapLog) Error(ctx context.Context, v ...interface{}) {
 	msg := getMsg(v)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		msg = "RequestId=" + ctx.Value("requestId").(string) + " " + msg
+	}
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
@@ -86,17 +98,25 @@ func (log *zapLog) Error(v ...interface{}) {
 	log.Logger.Error(msg, fields...)
 }
 
-func (log *zapLog) Errorf(format string, v ...interface{}) {
+func (log *zapLog) Errorf(ctx context.Context, format string, v ...interface{}) {
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
 	}
 	log.kv = nil
-	log.Logger.Error(fmt.Sprintf(format, v...), fields...)
+	var requestId string
+	if ctx != nil && ctx.Value("requestId") != nil {
+		requestId = "RequestId=" + ctx.Value("requestId").(string) + " "
+	}
+	log.Logger.Error(requestId+fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) Panic(v ...interface{}) {
+func (log *zapLog) Panic(ctx context.Context, v ...interface{}) {
 	msg := getMsg(v)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		msg = "RequestId=" + ctx.Value("requestId").(string) + " " + msg
+	}
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
@@ -105,17 +125,25 @@ func (log *zapLog) Panic(v ...interface{}) {
 	log.Logger.Panic(msg, fields...)
 }
 
-func (log *zapLog) Panicf(format string, v ...interface{}) {
+func (log *zapLog) Panicf(ctx context.Context, format string, v ...interface{}) {
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
 	}
 	log.kv = nil
-	log.Logger.Panic(fmt.Sprintf(format, v...), fields...)
+	var requestId string
+	if ctx != nil && ctx.Value("requestId") != nil {
+		requestId = "RequestId=" + ctx.Value("requestId").(string) + " "
+	}
+	log.Logger.Panic(requestId+fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) Warn(v ...interface{}) {
+func (log *zapLog) Warn(ctx context.Context, v ...interface{}) {
 	msg := getMsg(v)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		msg = "RequestId=" + ctx.Value("requestId").(string) + " " + msg
+	}
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
@@ -124,17 +152,25 @@ func (log *zapLog) Warn(v ...interface{}) {
 	log.Logger.Warn(msg, fields...)
 }
 
-func (log *zapLog) Warnf(format string, v ...interface{}) {
+func (log *zapLog) Warnf(ctx context.Context, format string, v ...interface{}) {
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
 	}
 	log.kv = nil
-	log.Logger.Warn(fmt.Sprintf(format, v...), fields...)
+	var requestId string
+	if ctx != nil && ctx.Value("requestId") != nil {
+		requestId = "RequestId=" + ctx.Value("requestId").(string) + " "
+	}
+	log.Logger.Warn(requestId+fmt.Sprintf(format, v...), fields...)
 }
 
-func (log *zapLog) Debug(v ...interface{}) {
+func (log *zapLog) Debug(ctx context.Context, v ...interface{}) {
 	msg := getMsg(v)
+
+	if ctx != nil && ctx.Value("requestId") != nil {
+		msg = "RequestId=" + ctx.Value("requestId").(string) + " " + msg
+	}
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
@@ -143,13 +179,17 @@ func (log *zapLog) Debug(v ...interface{}) {
 	log.Logger.Debug(msg, fields...)
 }
 
-func (log *zapLog) Debugf(format string, v ...interface{}) {
+func (log *zapLog) Debugf(ctx context.Context, format string, v ...interface{}) {
 	var fields []zap.Field
 	for _, with := range log.kv {
 		fields = append(fields, zap.Any(with.Key, with.Val))
 	}
 	log.kv = nil
-	log.Logger.Debug(fmt.Sprintf(format, v...), fields...)
+	var requestId string
+	if ctx != nil && ctx.Value("requestId") != nil {
+		requestId = "RequestId=" + ctx.Value("requestId").(string) + " "
+	}
+	log.Logger.Debug(requestId+fmt.Sprintf(format, v...), fields...)
 }
 
 func newZapLog(c Config) *zapLog {

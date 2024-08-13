@@ -1,23 +1,23 @@
-package redis
+package redistool
 
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"reflect"
 )
 
-type RedisCli struct {
+type Client struct {
 	redis.UniversalClient
 }
 
-func (r *RedisCli) Get(ctx context.Context, key string) (res string, err error) {
+func (r *Client) Get(ctx context.Context, key string) (res string, err error) {
 	res, err = r.UniversalClient.Get(ctx, key).Result()
 	return
 }
 
 type Config struct {
-	Addrs            []string
+	Addr             []string
 	DB               int
 	UserName         string
 	Password         string
@@ -25,10 +25,10 @@ type Config struct {
 	SentinelPassword string //when redis sentinel
 }
 
-func New(c Config) *RedisCli {
-	var r = new(RedisCli)
+func New(c Config) *Client {
+	var r = new(Client)
 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs:            c.Addrs,
+		Addrs:            c.Addr,
 		DB:               c.DB,
 		Username:         c.UserName,
 		Password:         c.Password,
@@ -40,7 +40,7 @@ func New(c Config) *RedisCli {
 }
 
 // HSetFromStruct 把struct按hash结构存入redis
-func (r *RedisCli) HSetFromStruct(ctx context.Context, key string, data interface{}) *redis.IntCmd {
+func (r *Client) HSetFromStruct(ctx context.Context, key string, data interface{}) *redis.IntCmd {
 	mapData := make(map[string]string)
 	d := reflect.TypeOf(data)
 	v := reflect.ValueOf(data)
@@ -51,7 +51,7 @@ func (r *RedisCli) HSetFromStruct(ctx context.Context, key string, data interfac
 }
 
 // HSetFromStructByPip  使用pipeline把struct按hash结构存入redis
-func (r *RedisCli) HSetFromStructByPip(ctx context.Context, pip *redis.Pipeliner, key string, data interface{}) *redis.IntCmd {
+func (r *Client) HSetFromStructByPip(ctx context.Context, pip *redis.Pipeliner, key string, data interface{}) *redis.IntCmd {
 	mapData := make(map[string]string)
 	d := reflect.TypeOf(data)
 	v := reflect.ValueOf(data)
@@ -59,12 +59,4 @@ func (r *RedisCli) HSetFromStructByPip(ctx context.Context, pip *redis.Pipeliner
 		mapData[d.Field(i).Name] = fmt.Sprint(v.Field(i).Interface())
 	}
 	return (*pip).HSet(ctx, key, mapData)
-}
-
-func (r *RedisCli) DistLock(ctx context.Context, key string) (bool, error) {
-	return false, nil
-}
-
-func (r *RedisCli) DistUnLock(ctx context.Context, key string) (bool, error) {
-	return false, nil
 }

@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"github.com/shopspring/decimal"
+	"net/http"
 	"reflect"
 	"time"
 	"unsafe"
@@ -66,4 +67,13 @@ func StringToByte(s string) (b []byte) {
 	bh.Cap = sh.Len
 	bh.Len = sh.Len
 	return b
+}
+
+func GetClientIp(req http.Request) string {
+	forwarded := req.Header.Get("X-FORWARDED-FOR")
+	if forwarded != "" {
+		return forwarded
+	}
+	return req.RemoteAddr
+
 }

@@ -1,8 +1,10 @@
-package redis
+package redistool
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
+	"errors"
+	"github.com/redis/go-redis/v9"
+	context2 "github.com/yunduansing/gtools/context"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -26,9 +28,9 @@ else
 end`
 )
 
-// A RedisLock is a redis lock.
-type RedisLock struct {
-	store     redis.Cmdable
+// A Locker is a redis lock.
+type Locker struct {
+	store     redis.UniversalClient
 	seconds   uint32
 	key       string
 	id        string
@@ -41,9 +43,9 @@ func init() {
 	rand.NewSource(time.Now().UnixNano())
 }
 
-// NewRedisLock returns a RedisLock.
-func NewRedisLock(store redis.Cmdable, key string) *RedisLock {
-	return &RedisLock{
+// NewRedisLock returns a Locker.
+func NewRedisLock(store redis.UniversalClient, key string) *Locker {
+	return &Locker{
 		store: store,
 		key:   key,
 		id:    Randn(randomLen),
@@ -51,9 +53,9 @@ func NewRedisLock(store redis.Cmdable, key string) *RedisLock {
 	}
 }
 
-// NewRedisLockWithContext returns a RedisLock.
-func NewRedisLockWithContext(ctx context2.Context, store redis.Cmdable, key string) *RedisLock {
-	return &RedisLock{
+// NewRedisLockWithContext returns a Locker.
+func NewRedisLockWithContext(ctx context2.Context, store redis.UniversalClient, key string) *Locker {
+	return &Locker{
 		store: store,
 		key:   key,
 		id:    Randn(randomLen),
@@ -66,7 +68,7 @@ func NewRedisLockWithContext(ctx context2.Context, store redis.Cmdable, key stri
 // @repeat  重试次数，默认不重试
 //
 // @wait 重试(repeat>1)时，重试的间隔时间  默认10ms
-func (rl *RedisLock) Acquire(repeat int, wait time.Duration) (bool, error) {
+func (rl *Locker) Acquire(repeat int, wait time.Duration) (bool, error) {
 	if wait == 0 {
 		wait = 10 * time.Millisecond // 默认等待时间
 	}
@@ -84,30 +86,30 @@ func (rl *RedisLock) Acquire(repeat int, wait time.Duration) (bool, error) {
 			rl.id, strconv.Itoa(int(seconds)*millisPerSecond + tolerance),
 		}).Result()
 		if rl.IsDebug {
-			rl.ctx.Log.Infof("acquiring lock for key=%s  acquireCount=%d  time cost=%s", rl.key, attempt+1, time.Since(start))
+			rl.ctx.Log.Infof(rl.ctx.Ctx, "acquiring lock for key=%s  acquireCount=%d  time cost=%s", rl.key, attempt+1, time.Since(start))
 		}
 
 		if errors.Is(err, redis.Nil) {
 			// 锁未被获取，继续尝试
 			continue
 		} else if err != nil {
-			rl.ctx.Log.Errorf("Error on acquiring lock for key=%s, err=%s", rl.key, err)
+			rl.ctx.Log.Errorf(rl.ctx.Ctx, "Error on acquiring lock for key=%s, err=%s", rl.key, err)
 			//return false, err
 			continue
 		} else if resp == nil {
-			rl.ctx.Log.Errorf("Error on acquiring lock for key=%s, err=%s", rl.key, err)
+			rl.ctx.Log.Errorf(rl.ctx.Ctx, "Error on acquiring lock for key=%s, err=%s", rl.key, err)
 			continue
 		}
 
 		reply, ok := resp.(string)
 		if ok && reply == "OK" {
 			if repeat > 0 {
-				rl.ctx.Log.Infof("Success on acquiring lock for key=%s,acquireCount=%d", rl.key, attempt+1)
+				rl.ctx.Log.Infof(rl.ctx.Ctx, "Success on acquiring lock for key=%s,acquireCount=%d", rl.key, attempt+1)
 			}
 			return true, nil // 成功获取锁
 		}
 
-		rl.ctx.Log.Errorf("Unknown reply when acquiring lock for key=%s: resp=%+v", rl.key, resp)
+		rl.ctx.Log.Errorf(rl.ctx.Ctx, "Unknown reply when acquiring lock for key=%s: resp=%+v", rl.key, resp)
 	}
 
 	return false, nil // 超过重试次数，未能获取锁
@@ -121,7 +123,7 @@ func (rl *RedisLock) Acquire(repeat int, wait time.Duration) (bool, error) {
 // @baseDelay  重试(repeat>1)时，基础延迟时间
 //
 // @maxDelay 重试(repeat>0)时，最大延迟时间，默认10ms
-func (rl *RedisLock) AcquireBackoff(repeat int, baseDelay, maxDelay time.Duration) (bool, error) {
+func (rl *Locker) AcquireBackoff(repeat int, baseDelay, maxDelay time.Duration) (bool, error) {
 	if baseDelay == 0 {
 		baseDelay = time.Millisecond // 默认基础延迟等待时间
 	}
@@ -151,37 +153,37 @@ func (rl *RedisLock) AcquireBackoff(repeat int, baseDelay, maxDelay time.Duratio
 			rl.id, strconv.Itoa(int(seconds)*millisPerSecond + tolerance),
 		}).Result()
 		if rl.IsDebug {
-			rl.ctx.Log.Infof("acquiring lock for key=%s  acquireCount=%d  time cost=%s", rl.key, attempt+1, time.Since(start))
+			rl.ctx.Log.Infof(rl.ctx.Ctx, "acquiring lock for key=%s  acquireCount=%d  time cost=%s", rl.key, attempt+1, time.Since(start))
 		}
 
 		if errors.Is(err, redis.Nil) {
 			// 锁未被获取，继续尝试
 			continue
 		} else if err != nil {
-			rl.ctx.Log.Errorf("Error on acquiring lock for key=%s, err=%s", rl.key, err)
+			rl.ctx.Log.Errorf(rl.ctx.Ctx, "Error on acquiring lock for key=%s, err=%s", rl.key, err)
 			continue
 		} else if resp == nil {
-			rl.ctx.Log.Errorf("Error on acquiring lock for key=%s, err=%s", rl.key, err)
+			rl.ctx.Log.Errorf(rl.ctx.Ctx, "Error on acquiring lock for key=%s, err=%s", rl.key, err)
 			continue
 		}
 
 		reply, ok := resp.(string)
 		if ok && reply == "OK" {
 			if repeat > 0 {
-				rl.ctx.Log.Infof("Success on acquiring lock for key=%s,acquireCount=%d", rl.key, attempt+1)
+				rl.ctx.Log.Infof(rl.ctx.Ctx, "Success on acquiring lock for key=%s,acquireCount=%d", rl.key, attempt+1)
 			}
 
 			return true, nil // 成功获取锁
 		}
 
-		rl.ctx.Log.Errorf("Unknown reply when acquiring lock for key=%s: resp=%+v", rl.key, resp)
+		rl.ctx.Log.Errorf(rl.ctx.Ctx, "Unknown reply when acquiring lock for key=%s: resp=%+v", rl.key, resp)
 	}
 
 	return false, nil // 超过重试次数，未能获取锁
 }
 
 // Release releases the lock.
-func (rl *RedisLock) Release() (bool, error) {
+func (rl *Locker) Release() (bool, error) {
 	if rl.stopRenew != nil {
 		close(rl.stopRenew)
 	}
@@ -199,6 +201,6 @@ func (rl *RedisLock) Release() (bool, error) {
 }
 
 // SetExpire sets the expiration.
-func (rl *RedisLock) SetExpire(seconds int) {
+func (rl *Locker) SetExpire(seconds int) {
 	atomic.StoreUint32(&rl.seconds, uint32(seconds))
 }

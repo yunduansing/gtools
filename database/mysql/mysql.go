@@ -1,6 +1,7 @@
 package mysqltool
 
 import (
+	"context"
 	"fmt"
 	sysLog "github.com/yunduansing/gtools/logger"
 	"gorm.io/driver/mysql"
@@ -23,13 +24,18 @@ type Config struct {
 	LogFile  string `json:",default=log/db"`
 }
 
-type Option func()
+type Option func(c *Config)
 
-func WithMaxIdleConn() {
-
+func WithIdleConn(idleConn int) Option {
+	return func(c *Config) {
+		c.IdleConn = idleConn
+	}
 }
 
-func WithMaxOpenConn() {
+func WithMaxConn() Option {
+	return func(c *Config) {
+		c.MaxConn = maxConn
+	}
 
 }
 
@@ -51,7 +57,7 @@ func NewMySQLFromConfig(c *Config, opts ...Option) (*gorm.DB, error) {
 	})
 
 	if err != nil {
-		sysLog.Error("Init open mysql err:", err)
+		sysLog.Error(context.TODO(), "Init open mysql err:", err)
 		panic(err)
 	}
 	ic := idleConn
@@ -64,11 +70,11 @@ func NewMySQLFromConfig(c *Config, opts ...Option) (*gorm.DB, error) {
 	}
 	err = db.Use(dbresolver.Register(dbresolver.Config{}).SetMaxIdleConns(ic).SetMaxOpenConns(mc).SetConnMaxIdleTime(time.Hour).SetConnMaxLifetime(24 * time.Hour))
 	if err != nil {
-		sysLog.Error("Register mysql plugin err:", err)
+		sysLog.Error(context.TODO(), "Register mysql plugin err:", err)
 		panic(err)
 	}
 	for _, opt := range opts {
-		opt()
+		opt(c)
 	}
 	return db, err
 }
@@ -78,26 +84,26 @@ func SetMultiDb(db *gorm.DB) {
 }
 
 // NewMySQLFromConnString 创建gorm mysql DB
-func NewMySQLFromConnString(ds string, opts ...Option) (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(ds), &gorm.Config{
-		Logger: logger.New(log.New(os.Stdout, "", log.LstdFlags), logger.Config{
-			LogLevel: logger.Info,
-		}),
-		PrepareStmt: true,
-	})
-	if err != nil {
-		sysLog.Error("Init open mysql err:", err)
-		panic(err)
-	}
-	ic := idleConn
-	mc := maxConn
-	err = db.Use(dbresolver.Register(dbresolver.Config{}).SetMaxIdleConns(ic).SetMaxOpenConns(mc).SetConnMaxIdleTime(time.Hour).SetConnMaxLifetime(24 * time.Hour))
-	if err != nil {
-		sysLog.Error("Register mysql plugin err:", err)
-		panic(err)
-	}
-	for _, opt := range opts {
-		opt()
-	}
-	return db, nil
-}
+//func NewMySQLFromConnString(ds string, opts ...Option) (*gorm.DB, error) {
+//	db, err := gorm.Open(mysql.Open(ds), &gorm.Config{
+//		Logger: logger.New(log.New(os.Stdout, "", log.LstdFlags), logger.Config{
+//			LogLevel: logger.Info,
+//		}),
+//		PrepareStmt: true,
+//	})
+//	if err != nil {
+//		sysLog.Error(context.TODO(), "Init open mysql err:", err)
+//		panic(err)
+//	}
+//	ic := idleConn
+//	mc := maxConn
+//	err = db.Use(dbresolver.Register(dbresolver.Config{}).SetMaxIdleConns(ic).SetMaxOpenConns(mc).SetConnMaxIdleTime(time.Hour).SetConnMaxLifetime(24 * time.Hour))
+//	if err != nil {
+//		sysLog.Error(context.TODO(), "Register mysql plugin err:", err)
+//		panic(err)
+//	}
+//	for _, opt := range opts {
+//		opt()
+//	}
+//	return db, nil
+//}
