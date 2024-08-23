@@ -8,7 +8,13 @@ import (
 var (
 	logger ILog
 	once   sync.Once
+	p      sync.Pool
 )
+
+type Logger struct {
+	ILog
+	ctx context.Context
+}
 
 const (
 	LogTypeZap    = "zap"
@@ -26,7 +32,12 @@ func InitLog(c Config) {
 	}
 }
 
-func GetLogger() ILog {
+func (l *Logger) WithContext(ctx context.Context) *Logger {
+	l.ctx = ctx
+	return l
+}
+
+func GetLogger() *Logger {
 	if logger == nil {
 		once.Do(func() {
 			logger = newZapLog(Config{
@@ -35,9 +46,14 @@ func GetLogger() ILog {
 				LogType:     "zap",
 				ServiceName: "",
 			})
+
+			p.New = func() any {
+				return &Logger{ILog: logger}
+			}
 		})
 	}
-	return logger
+
+	return p.Get().(*Logger)
 }
 
 func Info(ctx context.Context, v ...interface{}) {

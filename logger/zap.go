@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-var Logger *zap.Logger
-
 type zapLog struct {
 	*zap.Logger
 	kv []KeyPair
@@ -221,19 +219,6 @@ func getLogContent(content interface{}) string {
 		return fmt.Sprintf("%s:%s", v.Key, utils.ToJsonString(v.Val))
 	}
 	return utils.ToJsonString(content)
-}
-
-func InitLogger() {
-	Logger = getLogWriter(Config{
-		Level: "Info",
-	})
-}
-
-func getEncoder() zapcore.Encoder {
-	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
-	return zapcore.NewJSONEncoder(encoderConfig)
 }
 
 func getLogWriter(c Config) *zap.Logger {

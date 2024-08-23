@@ -1,6 +1,7 @@
 package mysqltool
 
 import (
+	"context"
 	"github.com/yunduansing/gtools/logger"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -69,8 +70,8 @@ func findAllOrders(db *gorm.DB) {
 	var orders []Order
 	err := db.Preload("Goods").Find(&orders).Error
 	if err != nil {
-		logger.Error("find orders err:", err)
+		logger.Error(context.Background(), "find orders err:", err)
 		return
 	}
-	logger.Info("find orders list:", orders)
+	logger.Info(context.Background(), "find orders list:", orders)
 }
