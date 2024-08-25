@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	mysqltool "github.com/yunduansing/gtools/database/mysql"
-	"github.com/yunduansing/gtools/tracing"
+	"github.com/yunduansing/gtools/opentelemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -110,6 +110,44 @@ func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause
 	return res
 }
 
+// Save wrap gorm.Save
+//
+// @value any struct pointer to save data
+//
+// @do conds gorm.clause.Expression
+//
+// for example:
+//
+//	ctx := context.Background()
+//
+//	var req = struct {
+//		UserId int64  `json:"userId"`
+//		Name   string `json:"name"`
+//		Phone  string `json:"phone"`
+//		State  int    `json:"state"`
+//	}{
+//		UserId: 0,
+//		Name:   "Bob",
+//		Phone:  "13311112222",
+//		State:  1,
+//	}
+//
+//	var newUser = User{
+//		UserId:   req.UserId,
+//		Username: "",
+//		Phone:    req.Phone,
+//		Account:  req.Phone,
+//	}
+//
+//	err = db.Save(ctx,&newUser,clause.OnConflict{
+//		Columns:      []clause.Column{{Name: "phone"}},
+//		DoUpdates:    clause.Assignments(map[string]interface{}{"state": 1}),
+//	}).Error
+//	if err != nil {
+//		t.Error(err)
+//		return
+//	}
+//	t.Log(newUser)
 func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
 	tracing.TraceFunc(ctx, "gorm.Save", func(span trace.Span) {
@@ -133,7 +171,7 @@ func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *
 //
 // for example:
 //
-// var users []UserPageItem
+// var users []User
 //
 //	var count int64
 //	err = db.Find(context.Background(), &users, func(tx *gorm.DB, span trace.Span) *gorm.DB {
@@ -169,6 +207,28 @@ func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 	return res
 }
 
+// First wrap gorm.First
+//
+// @dest your result struct
+//
+// @do do func You can use do func to do sth.
+//
+// for example:
+//
+//	var user User
+//	err = db.First(context.Background(), &user, func(tx *gorm.DB, span trace.Span) *gorm.DB {
+//	  tx = tx.Table("t_app_user a").Joins("left join t_user_vip b on a.user_id=b.user_id")
+//	  if req.UserId > 0 {
+//		tx = tx.Where("a.user_id=?", req.UserId)
+//	  }
+//	  if req.Name != "" {
+//		tx = tx.Where("a.username like ?", fmt.Sprintf("%%%s%%", req.Name))
+//	  }
+//	  if req.IsVip > 0 {
+//		tx = tx.Where("a.is_vip=?", req.IsVip)
+//	  }
+//	  return tx
+//	}).Error
 func (db *Db) First(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
 	tracing.TraceFunc(ctx, "gorm.First", func(span trace.Span) {
@@ -198,6 +258,13 @@ func (db *Db) Transaction(ctx context.Context, do func(tx *gorm.DB, span trace.S
 	return err
 }
 
+// FindInBatch wrap gorm.FindInBatch
+//
+// @dest your result struct
+//
+// @do do func You can use do func to do sth.
+//
+// @batchSize batchSize
 func (db *Db) FindInBatch(ctx context.Context, dest any, batchSize int, do func(tx *gorm.DB, span trace.Span) error) *gorm.DB {
 	var result *gorm.DB
 	tracing.TraceFunc(ctx, "gorm.FindInBatch", func(span trace.Span) {

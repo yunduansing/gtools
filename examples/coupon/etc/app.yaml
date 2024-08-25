@@ -1,0 +1,18 @@
+Name: coupon
+Port: 8081
+Mysql:
+  Host: 192.168.2.1
+  Port: 3306
+  User: root
+  Password: root
+  Database: coupon
+Redis:
+  Addr: 127.0.0.1:6379
+  Password: xxx
+  Db: 0
+  IsCluster: true
+Log:
+  Level: Info
+  Path: ./log
+  LogType: zap
+  ServiceName: coupon

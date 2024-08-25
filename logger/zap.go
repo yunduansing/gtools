@@ -84,8 +84,8 @@ func (log *zapLog) Infof(ctx context.Context, format string, v ...interface{}) {
 
 func (log *zapLog) Error(ctx context.Context, v ...interface{}) {
 	msg := getMsg(v)
-
-	if ctx != nil && ctx.Value("requestId") != nil {
+	vvvv := ctx.Value("requestId")
+	if ctx != nil && vvvv != nil {
 		msg = "RequestId=" + ctx.Value("requestId").(string) + " " + msg
 	}
 	var fields []zap.Field

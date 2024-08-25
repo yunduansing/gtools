@@ -14,6 +14,7 @@ var (
 type Logger struct {
 	ILog
 	ctx context.Context
+	kv  []KeyPair
 }
 
 const (
@@ -37,7 +38,15 @@ func (l *Logger) WithContext(ctx context.Context) *Logger {
 	return l
 }
 
-func GetLogger() *Logger {
+func (l *Logger) WithField(key string, val any) *Logger {
+	l.kv = append(l.kv, KeyPair{
+		Key: key,
+		Val: val,
+	})
+	return l
+}
+
+func GetLogger() ILog {
 	if logger == nil {
 		once.Do(func() {
 			logger = newZapLog(Config{
@@ -47,13 +56,13 @@ func GetLogger() *Logger {
 				ServiceName: "",
 			})
 
-			p.New = func() any {
-				return &Logger{ILog: logger}
-			}
+			//p.New = func() any {
+			//	return &Logger{ILog: logger}
+			//}
 		})
 	}
 
-	return p.Get().(*Logger)
+	return logger //p.Get().(*Logger)
 }
 
 func Info(ctx context.Context, v ...interface{}) {

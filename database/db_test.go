@@ -6,18 +6,21 @@ import (
 	"fmt"
 	mysqltool "github.com/yunduansing/gtools/database/mysql"
 	"github.com/yunduansing/gtools/logger"
-	"github.com/yunduansing/gtools/tracing"
+	"github.com/yunduansing/gtools/opentelemetry/tracing"
+	"github.com/yunduansing/gtools/utils"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"testing"
 	"time"
 )
 
 func TestDb_Do(t *testing.T) {
 	tracing.InitOtelTracer("db_test")
+	ctx := context.WithValue(context.Background(), "requestId", utils.UUID())
 	db, err := NewDb(mysqltool.Config{})
 	if err != nil {
-		logger.Error(context.Background(), err)
+		logger.Error(ctx, err)
 		panic(err)
 	}
 	req := UserPageReq{
@@ -29,8 +32,8 @@ func TestDb_Do(t *testing.T) {
 		Page:     0,
 	}
 	var total int64
-	var list []UserPageItem
-	db.Do(context.Background(), func(tx *gorm.DB, span trace.Span) *gorm.DB {
+	var list []User
+	db.Do(ctx, func(tx *gorm.DB, span trace.Span) *gorm.DB {
 		if req.UserId > 0 {
 			tx = tx.Where("user_id=?", req.UserId)
 		}
@@ -57,7 +60,7 @@ type UserPageReq struct {
 	Page     int    `json:"page"`
 }
 
-type UserPageItem struct {
+type User struct {
 	UserId   int64  `json:"userId"`
 	Username string `json:"name"`
 	Phone    string `json:"phone"`
@@ -103,7 +106,7 @@ func TestDb_Find(t *testing.T) {
 		Page:     1,
 		PageSize: 10,
 	}
-	var users []UserPageItem
+	var users []User
 	var count int64
 	err = db.Find(context.Background(), &users, func(tx *gorm.DB, span trace.Span) *gorm.DB {
 		tx = tx.Table("t_app_user a").Joins("left join t_user_vip b on a.user_id=b.user_id")
@@ -188,4 +191,52 @@ func TestDb_Transaction(t *testing.T) {
 		t.Error(err)
 		return
 	}
+}
+
+func TestDb_Save(t *testing.T) {
+	tracing.InitOtelTracer("db_test")
+	db, err := NewDb(mysqltool.Config{
+		Host:     "192.168.1.23",
+		Port:     3309,
+		Username: "",
+		Password: "",
+		DbName:   "",
+		MaxConn:  0,
+		IdleConn: 0,
+		LogFile:  "",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	ctx := context.Background()
+
+	var req = struct {
+		UserId int64  `json:"userId"`
+		Name   string `json:"name"`
+		Phone  string `json:"phone"`
+		State  int    `json:"state"`
+	}{
+		UserId: 0,
+		Name:   "Bob",
+		Phone:  "13311112222",
+		State:  1,
+	}
+
+	var newUser = User{
+		UserId:   req.UserId,
+		Username: "",
+		Phone:    req.Phone,
+		Account:  req.Phone,
+	}
+
+	err = db.Save(ctx, &newUser, clause.OnConflict{
+		Columns:   []clause.Column{{Name: "phone"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{"state": 1}),
+	}).Error
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(newUser)
 }
