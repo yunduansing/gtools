@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"github.com/yunduansing/gtools/opentelemetry/tracing"
+	"go.opentelemetry.io/otel/trace"
 	"reflect"
 )
 
@@ -59,4 +61,27 @@ func (r *Client) HSetFromStructByPip(ctx context.Context, pip *redis.Pipeliner, 
 		mapData[d.Field(i).Name] = fmt.Sprint(v.Field(i).Interface())
 	}
 	return (*pip).HSet(ctx, key, mapData)
+}
+
+// WrapDoWithTracing  使用链路追踪
+//
+// @spanName: 链路名称
+//
+// @fn: func(ctx context.Context, span trace.Span)
+//
+// example:
+//
+//	cli.WrapDoWithTracing(context.Background(), "redis.Get", func(ctx context.Context, span trace.Span) {
+//			r, err := cli.Get(ctx, "KEY")
+//			if err != nil {
+//				logger.GetLogger().Error(ctx, "redis.Get error", err)
+//				span.RecordError(err)
+//				return
+//			}
+//			t.Log("result:", r)
+//		})
+func (r *Client) WrapDoWithTracing(ctx context.Context, spanName string, fn func(ctx context.Context, span trace.Span)) {
+	tracing.TraceFunc(ctx, spanName, func(ctx context.Context, span trace.Span) {
+		fn(ctx, span)
+	})
 }

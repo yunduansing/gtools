@@ -10,6 +10,7 @@ import (
 	"github.com/yunduansing/gtools/examples/apiTest/apiContext"
 	"github.com/yunduansing/gtools/examples/apiTest/config"
 	"github.com/yunduansing/gtools/examples/apiTest/model"
+	"github.com/yunduansing/gtools/examples/apiTest/service"
 	"github.com/yunduansing/gtools/logger"
 	"io"
 	"net/http"
@@ -17,6 +18,11 @@ import (
 )
 
 type GinAction func(c *apiContext.ApiContext) model.Response
+
+var NoAuthPath = map[string]bool{
+	"/api/v1/user/login":  true,
+	"/api/v1/user/logout": true,
+}
 
 func RequestLimiter(c *gin.Context) {
 	if !config.IsLimiterOpen {
@@ -40,7 +46,6 @@ func RequestLimiter(c *gin.Context) {
 
 func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
 		var requestId string
 
 		xRequestId := c.GetHeader("X-Request-Id")
@@ -49,6 +54,9 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 		} else {
 			requestId = context.GenRequestIdByUUID()
 		}
+
+		start := time.Now()
+
 		var headers = make(map[string]string)
 		for k, header := range c.Request.Header {
 			headers[k] = header[0]
@@ -61,6 +69,20 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 		cc := apiContext.ApiContext{
 			Ctx:        &myCtx,
 			GinContext: c,
+		}
+
+		var token = c.GetHeader("Authorization")
+		if !NoAuthPath[c.Request.RequestURI] && len(token) == 0 {
+			c.JSON(http.StatusUnauthorized, model.Response{RequestId: requestId, Code: 401, Msg: "Unauthorized"})
+			c.Abort()
+			return
+
+		} else if len(token) > 0 {
+			user, _ := service.NewUserLoginService(&myCtx).GetUserLoginInfoByTokenFromCache(token)
+			if !NoAuthPath[c.Request.RequestURI] && user == nil {
+
+			}
+			cc.UserInfo = user
 		}
 
 		reqData, _ := io.ReadAll(c.Request.Body)

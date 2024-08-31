@@ -1,8 +1,6 @@
 module github.com/yunduansing/gtools
 
-go 1.21
-
-toolchain go1.21.1
+go 1.23
 
 require (
 	github.com/Shopify/sarama v1.38.1
@@ -27,13 +25,14 @@ require (
 	github.com/yunduansing/gocommon v0.0.2
 	go.opentelemetry.io/otel v1.29.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.16.0
-	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.29.0
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.28.0
 	go.opentelemetry.io/otel/metric v1.29.0
 	go.opentelemetry.io/otel/sdk v1.29.0
 	go.opentelemetry.io/otel/sdk/metric v1.29.0
 	go.opentelemetry.io/otel/trace v1.29.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.26.0
+	golang.org/x/net v0.28.0
 	google.golang.org/grpc v1.65.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.4.3
@@ -105,7 +104,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.53.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.4.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.28.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.28.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.28.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.28.0 // indirect
@@ -115,7 +113,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
