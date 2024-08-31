@@ -15,7 +15,7 @@ import (
 func main() {
 	config.InitConfig()
 	middleware.Init()
-	metrics.InitMetricsProvider("192.168.2.46:14318", config.Config.ServiceName, config.Uptrace.Version)
+	metrics.InitMetricsProvider("192.168.2.46:4318", config.Config.ServiceName, config.Uptrace.Version, "http://project2_secret_token@192.168.2.46:14317/1")
 	tracing.InitOtelTracer(config.Config.ServiceName)
 	middleware.InitUptrace(config.Config.ServiceName, config.Uptrace.Version, config.Uptrace.Dsn, config.Config.Env)
 	service.Init()

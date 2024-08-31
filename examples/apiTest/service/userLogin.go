@@ -46,9 +46,9 @@ func (s *UserLoginService) UserLogin(req *UserLoginReq) (res *UserLoginRes, err 
 	if user == nil || user.UserId == 0 {
 		return nil, model.NewMyError(400, "user not exist")
 	}
-	if user.State != model.UserStatusNormal {
-		return nil, model.NewMyError(400, "user banned")
-	}
+	//if user.State != model.UserStatusNormal {
+	//	return nil, model.NewMyError(400, "user banned")
+	//}
 	token := crypto.GenHmacSha256(req.Phone, utils.UUID())
 	res = &UserLoginRes{
 		UserId:   user.UserId,
@@ -73,13 +73,13 @@ func (s *UserLoginService) saveUserLoginInfoToCache(userInfo *UserLoginRes) erro
 		LoginTimeout: now.Add(loginTimeoutDuration).Unix(),
 	}
 	var err error
-	config.Redis.WrapDoWithTracing(s.ctx.Ctx, "redis.Set", func(ctx context2.Context, span trace.Span) {
+	config.Redis.WrapDoWithTracing(s.ctx.Ctx, "redis.Set", func(ctx context2.Context, span trace.Span) error {
 		_, err = config.Redis.Pipelined(ctx, func(pipe redis.Pipeliner) error {
 			//首先查一下是否已经有登录信息，如果有就清除掉旧的登录信息
 			userIdKey := userLoginDataPrefix + strconv.FormatInt(userInfo.UserId, 10)
 
 			result, err := pipe.Get(ctx, userIdKey).Result()
-			if err != nil {
+			if err != nil && !errors.Is(err, redis.Nil) {
 				s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
 				return err
 			}
@@ -91,7 +91,7 @@ func (s *UserLoginService) saveUserLoginInfoToCache(userInfo *UserLoginRes) erro
 					return err
 				}
 			}
-			err = pipe.Set(ctx, userLoginKeyPrefix+userInfo.Token, dataCache, loginTimeoutDuration).Err()
+			err = pipe.Set(ctx, userLoginKeyPrefix+userInfo.Token, utils.ToJsonString(dataCache), loginTimeoutDuration).Err()
 			if err != nil {
 				s.ctx.Log.Error(ctx, "redis.Set loginData error:", err)
 				return err
@@ -105,6 +105,7 @@ func (s *UserLoginService) saveUserLoginInfoToCache(userInfo *UserLoginRes) erro
 			}
 			return nil
 		})
+		return err
 	})
 	if err != nil {
 		return model.NewMyError(500, "redis error")
@@ -115,27 +116,28 @@ func (s *UserLoginService) saveUserLoginInfoToCache(userInfo *UserLoginRes) erro
 func (s *UserLoginService) GetUserLoginInfoByTokenFromCache(token string) (*UserLoginDataCache, error) {
 	var userLoginData UserLoginDataCache
 	var err error
-	config.Redis.WrapDoWithTracing(s.ctx.Ctx, "redis.Get", func(ctx context2.Context, span trace.Span) {
+	config.Redis.WrapDoWithTracing(s.ctx.Ctx, "redis.Get", func(ctx context2.Context, span trace.Span) error {
 		var result string
 		result, err = config.Redis.Get(ctx, userLoginKeyPrefix+token)
 		if err != nil {
 			s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
 			span.RecordError(err)
-			return
+			return err
 		}
 		err = json.Unmarshal(utils.StringToByte(result), &userLoginData)
 		if err != nil {
 			s.ctx.Log.Error(ctx, "json.Unmarshal loginData from redis error:", err)
 			span.RecordError(err)
-			return
+			return err
 		}
 
 		if userLoginData.LoginTimeout < time.Now().Unix() {
 			err = model.NewMyError(401, "login timeout")
 			s.ctx.Log.Error(ctx, "login timeout error:", err)
 			span.RecordError(err)
-			return
+			return err
 		}
+		return nil
 	})
 	return &userLoginData, err
 }

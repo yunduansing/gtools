@@ -12,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-func InitMetricsProvider(exporterEndpoint, serviceName, version string) {
+func InitMetricsProvider(exporterEndpoint, serviceName, version, uptraceDsn string) {
 	// 初始化一个meterProvider，并设置为全局
 	// 实际应用中，应该使用MeterProvider的实现来连接到监控系统
 	// 这里使用的是No-op Meters提供的MeterProvider，仅用于示例
@@ -21,6 +21,10 @@ func InitMetricsProvider(exporterEndpoint, serviceName, version string) {
 		otlpmetrichttp.WithEndpoint(exporterEndpoint),
 		otlpmetrichttp.WithInsecure(),
 		otlpmetrichttp.WithCompression(otlpmetrichttp.GzipCompression),
+		otlpmetrichttp.WithHeaders(map[string]string{
+			// Set the Uptrace DSN here or use UPTRACE_DSN env var.
+			"uptrace-dsn": uptraceDsn,
+		}),
 	)
 	if err != nil {
 		panic(err)

@@ -15,10 +15,10 @@ const (
 )
 
 type User struct {
-	UserId   int64      `json:"userId"`
-	UserName string     `json:"userName"`
-	Phone    string     `json:"phone"`
-	State    UserStatus `json:"state" gorm:"type:enum('active','inactive','banned')"`
+	UserId   int64  `json:"userId"`
+	UserName string `json:"userName"`
+	Phone    string `json:"phone"`
+	//State    UserStatus `json:"state" gorm:"type:enum('active','inactive','banned')"`
 }
 
 func (*User) TableName() string {

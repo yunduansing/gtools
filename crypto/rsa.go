@@ -10,9 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/youmark/pkcs8"
 	"github.com/yunduansing/gtools/utils"
-	"os"
 	"reflect"
 	"sort"
 )
@@ -105,37 +103,4 @@ func getFieldValueString(i interface{}) string {
 		return utils.ToJsonString(i)
 	}
 	return ""
-}
-
-func EncryptRsaPrivateKey() {
-	// Generate a new private key
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// Define the encryption password
-	password := "your-password"
-
-	// Convert the private key to PKCS8
-	pkcs8Key, err := pkcs8.ConvertPrivateKeyToPKCS8(privateKey)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// Encrypt the PKCS8 private key
-	encryptedKey, err := pkcs8.EncryptPKCS8PrivateKey(pkcs8Key, password, pkcs8.PBKDF2Count, x509.PEMCipherAES256)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// Write the encrypted private key to a file
-	err = os.WriteFile("encrypted_private_key.pem", encryptedKey, 0600)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 }

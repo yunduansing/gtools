@@ -33,6 +33,8 @@ func (db *Db) DoWithName(ctx context.Context, traceName string, do DbFunc) {
 		result := do(db.Mysql, span)
 		if result.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", result.Error.Error()))
+
+			span.RecordError(result.Error)
 		}
 	})
 }
@@ -51,6 +53,8 @@ func (db *Db) Create(ctx context.Context, value any, do DbFunc, conds ...clause.
 		res = d.Create(value)
 		if res.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+
+			span.RecordError(res.Error)
 		}
 	})
 	return res
@@ -70,6 +74,8 @@ func (db *Db) CreateBatch(ctx context.Context, value any, batchSize int, do DbFu
 		res = d.CreateInBatches(value, batchSize)
 		if res.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+
+			span.RecordError(res.Error)
 		}
 	})
 	return res
@@ -103,6 +109,8 @@ func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause
 		res = d.Updates(value)
 		if res.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+
+			span.RecordError(res.Error)
 		}
 	})
 	return res
@@ -156,6 +164,8 @@ func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *
 		res = d.Save(value)
 		if res.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+
+			span.RecordError(res.Error)
 		}
 	})
 	return res
@@ -200,6 +210,8 @@ func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 		res = d.Find(dest)
 		if res.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+
+			span.RecordError(res.Error)
 		}
 	})
 	return res
@@ -237,6 +249,8 @@ func (db *Db) First(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 		res = d.First(dest)
 		if res.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+
+			span.RecordError(res.Error)
 		}
 	})
 	return res
@@ -251,6 +265,7 @@ func (db *Db) Transaction(ctx context.Context, do func(tx *gorm.DB, span trace.S
 		})
 		if err != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", err.Error()))
+			span.RecordError(err)
 		}
 	})
 	return err
@@ -271,6 +286,7 @@ func (db *Db) FindInBatch(ctx context.Context, dest any, batchSize int, do func(
 		})
 		if result.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", result.Error.Error()))
+			span.RecordError(result.Error)
 		}
 	})
 	return result

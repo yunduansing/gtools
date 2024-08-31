@@ -80,8 +80,12 @@ func (r *Client) HSetFromStructByPip(ctx context.Context, pip *redis.Pipeliner, 
 //			}
 //			t.Log("result:", r)
 //		})
-func (r *Client) WrapDoWithTracing(ctx context.Context, spanName string, fn func(ctx context.Context, span trace.Span)) {
+func (r *Client) WrapDoWithTracing(ctx context.Context, spanName string, fn func(ctx context.Context, span trace.Span) error) {
 	tracing.TraceFunc(ctx, spanName, func(ctx context.Context, span trace.Span) {
-		fn(ctx, span)
+		err := fn(ctx, span)
+		if err != nil {
+			span.RecordError(err)
+		}
+
 	})
 }

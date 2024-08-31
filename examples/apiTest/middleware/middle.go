@@ -22,6 +22,7 @@ type GinAction func(c *apiContext.ApiContext) model.Response
 var NoAuthPath = map[string]bool{
 	"/api/v1/user/login":  true,
 	"/api/v1/user/logout": true,
+	"/api/v1/user":        true,
 }
 
 func RequestLimiter(c *gin.Context) {
@@ -101,7 +102,7 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 		resp := handler(&cc)
 		resp.RequestId = requestId
 		myCtx.Log.WithField("URL", c.Request.URL).
-			WithField("Cost", time.Since(start)).
+			WithField("Cost", time.Since(start).String()).
 			WithField("Method", c.Request.Method).
 			WithField("Resp", resp).
 			WithField("ClientIP", c.ClientIP()).
