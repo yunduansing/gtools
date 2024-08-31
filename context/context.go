@@ -9,7 +9,7 @@ import (
 type Context struct {
 	Ctx         c.Context
 	requestId   string
-	Log         logger.ILog
+	Log         *logger.Logger
 	requestTime string
 }
 

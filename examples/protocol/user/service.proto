@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package user;
+
+option go_package="protocol/user";
+option java_package = "protocol/user";
+option java_multiple_files = true;
+import "user/req.proto";
+import "user/res.proto";
+
+service UserService{
+  rpc GetUser(GetUserReq) returns(UserResponse){}
+}

@@ -1,6 +1,8 @@
 package model
 
-import mysqltool "github.com/yunduansing/gtools/database/mysql"
+import (
+	mysqltool "github.com/yunduansing/gtools/database"
+)
 
 const (
 	ActivityUserRangeAll    = "all"
@@ -37,12 +39,12 @@ func (t *ActivityCoupon) TableName() string {
 }
 
 func FindActivityById(activityId int64) (res *Activity, err error) {
-	err = mysqltool.Get(ReadMysql).Where("id = ?", activityId).First(res).Error
+	err = mysqltool.Get(ReadMysql).Mysql.Where("id = ?", activityId).First(res).Error
 	return
 }
 
 func FindActivityCouponList(activityId int64) (res []*ActivityCoupon, err error) {
-	err = mysqltool.Get(ReadMysql).Where("activity_id = ?", activityId).Find(res).Error
+	err = mysqltool.Get(ReadMysql).Mysql.Where("activity_id = ?", activityId).Find(res).Error
 	return
 }
 
@@ -53,7 +55,7 @@ type ActivityCouponGroupView struct {
 }
 
 func FindActivityCouponGroup(activityId int64, templateCode string) (res *ActivityCouponGroupView, err error) {
-	err = mysqltool.Get(ReadMysql).Model(&ActivityCoupon{}).Where("activity_id = ? and template_code = ?",
+	err = mysqltool.Get(ReadMysql).Mysql.Model(&ActivityCoupon{}).Where("activity_id = ? and template_code = ?",
 		activityId, templateCode).Select("activity_id,template_code,count(1) as num").Find(&res).Error
 	return
 

@@ -30,7 +30,7 @@ func (l *logrusLog) close() {
 	}
 }
 
-func getLogrusMsg(l *logrusLog, v ...interface{}) string {
+func getLogrusMsg(v ...interface{}) string {
 	//list := v.([]interface{})
 	var msg strings.Builder
 
@@ -55,183 +55,117 @@ func getLogrusMsg(l *logrusLog, v ...interface{}) string {
 	return msg.String()
 }
 
-func getLogrusErrorEntry(l *logrusLog, content interface{}) *logrus.Entry {
-	switch e := content.(type) {
-	case error:
-		return l.WithError(e)
-	}
-	return nil
-}
-
-func getLogrusEntry(l *logrusLog, v ...interface{}) *logrus.Entry {
-	for _, item := range v {
-		res := getLogrusErrorEntry(l, item)
-		if res != nil {
-			return res
-		}
-	}
-	return l.WithTime(time.Now())
-}
-
-// 获取错误堆栈信息
-func getErrorStack(l *logrusLog, err error) string {
-	var stack strings.Builder
-	for {
-		if err != nil {
-			stack.WriteString(err.Error())
-			stack.WriteString("\n")
-		}
-		debugStack := debug.Stack()
-		if debugStack != nil {
-			fmt.Fprint(l.Out, stack)
-			//stack.WriteString(string(debugStack))
-		}
-		if err == nil {
-			break
-		}
-		cause, ok := err.(interface{ Causes() []error })
-		if !ok {
-			break
-		}
-		if len(cause.Causes()) == 0 {
-			break
-		}
-		err = cause.Causes()[0]
-	}
-	return stack.String()
-}
-
 func (log *logrusLog) WithField(field, value string) {
 	log.fields = append(log.fields, KeyPair{field, value})
 }
 
 func (l *logrusLog) Info(ctx context.Context, v ...interface{}) {
-	logMsg := getLogrusMsg(l, v...)
+	logMsg := getLogrusMsg(v...)
 
-	if ctx != nil && ctx.Value("requestId") != nil {
-		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
-	}
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
+
 	l.Logger.WithFields(fields).Info(logMsg)
 }
 
 func (l *logrusLog) Infof(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
-	if ctx != nil && ctx.Value("requestId") != nil {
-		fields["RequestId"] = ctx.Value("requestId").(string)
-	}
+
 	l.Logger.WithFields(fields).Infof(format, v...)
 }
 
 func (l *logrusLog) Error(ctx context.Context, v ...interface{}) {
-	logMsg := getLogrusMsg(l, v...)
+	logMsg := getLogrusMsg(v...)
 
-	if ctx != nil && ctx.Value("requestId") != nil {
-		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
-	}
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
+
 	l.Logger.WithFields(fields).Error(logMsg)
 }
 
 func (l *logrusLog) Errorf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
-	if ctx != nil && ctx.Value("requestId") != nil {
-		fields["RequestId"] = ctx.Value("requestId").(string)
-	}
+
 	l.Logger.WithFields(fields).Errorf(format, v...)
 }
 
 func (l *logrusLog) Panic(ctx context.Context, v ...interface{}) {
-	logMsg := getLogrusMsg(l, v...)
+	logMsg := getLogrusMsg(v...)
 
-	if ctx != nil && ctx.Value("requestId") != nil {
-		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
-	}
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
+
 	l.Logger.WithFields(fields).Panic(logMsg)
 }
 
 func (l *logrusLog) Panicf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
-	if ctx != nil && ctx.Value("requestId") != nil {
-		fields["RequestId"] = ctx.Value("requestId").(string)
-	}
+
 	l.Logger.WithFields(fields).Panicf(format, v...)
 }
 
 func (l *logrusLog) Warn(ctx context.Context, v ...interface{}) {
-	logMsg := getLogrusMsg(l, v...)
+	logMsg := getLogrusMsg(v...)
 
-	if ctx != nil && ctx.Value("requestId") != nil {
-		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
-	}
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
+
 	l.Logger.WithFields(fields).Warn(logMsg)
 }
 
 func (l *logrusLog) Warnf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
-	if ctx != nil && ctx.Value("requestId") != nil {
-		fields["RequestId"] = ctx.Value("requestId").(string)
-	}
+
 	l.Logger.WithFields(fields).Warnf(format, v...)
 }
 
 func (l *logrusLog) Debug(ctx context.Context, v ...interface{}) {
-	logMsg := getLogrusMsg(l, v...)
+	logMsg := getLogrusMsg(v...)
 
-	if ctx != nil && ctx.Value("requestId") != nil {
-		logMsg = "RequestId=" + ctx.Value("requestId").(string) + " " + logMsg
-	}
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
+
 	l.Logger.WithFields(fields).Debug(logMsg)
 }
 
 func (l *logrusLog) Debugf(ctx context.Context, format string, v ...interface{}) {
 	var fields = make(map[string]interface{})
-	for _, with := range l.fields {
+	var kv = getKVFromCtx(ctx)
+	for _, with := range kv {
 		fields[with.Key] = with.Val
 	}
-	l.fields = nil
-	if ctx != nil && ctx.Value("requestId") != nil {
-		fields["RequestId"] = ctx.Value("requestId").(string)
-	}
+
 	l.Logger.WithFields(fields).Debugf(format, v...)
 }
 
@@ -268,7 +202,7 @@ func newLogrusLog(c Config) *logrusLog {
 	log.AddHook(&DefaultFieldHook{c})
 	logPath := c.FilePath
 	if len(logPath) == 0 {
-		logPath = "./log"
+		logPath = "./logs"
 	}
 	lfHook := lfshook.NewHook(lfshook.WriterMap{
 		logrus.DebugLevel: logWriter(logPath, "Info", c.MaxAge, c.BackupNum), // 为不同级别设置不同的输出目的

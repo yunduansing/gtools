@@ -3,7 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/assert/v2"
-	"github.com/yunduansing/gtools/examples/gintest/config"
+	"github.com/yunduansing/gtools/examples/apiTest/config"
 	"net/http"
 	"net/http/httptest"
 	"sync"

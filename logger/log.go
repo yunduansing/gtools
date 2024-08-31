@@ -12,9 +12,9 @@ var (
 )
 
 type Logger struct {
-	ILog
-	ctx context.Context
-	kv  []KeyPair
+	logger ILog
+	ctx    context.Context
+	kv     []KeyPair
 }
 
 const (
@@ -22,7 +22,16 @@ const (
 	LogTypeLogrus = "logrus"
 )
 
+func init() {
+	p.New = func() any {
+		return &Logger{logger: logger}
+	}
+}
+
 func InitLog(c Config) {
+	if len(c.FilePath) == 0 {
+		c.FilePath = "./logs"
+	}
 	switch c.LogType {
 	case LogTypeLogrus:
 		logger = newLogrusLog(c)
@@ -46,57 +55,120 @@ func (l *Logger) WithField(key string, val any) *Logger {
 	return l
 }
 
-func GetLogger() ILog {
+func GetLogger() *Logger {
 	if logger == nil {
 		once.Do(func() {
 			logger = newZapLog(Config{
 				Level:       "Info",
-				FilePath:    "log",
+				FilePath:    "./logs",
 				LogType:     "zap",
 				ServiceName: "",
 			})
-
-			//p.New = func() any {
-			//	return &Logger{ILog: logger}
-			//}
 		})
 	}
 
-	return logger //p.Get().(*Logger)
+	return p.Get().(*Logger)
 }
 
-func Info(ctx context.Context, v ...interface{}) {
-	GetLogger().Info(ctx, v...)
+func (l *Logger) Info(ctx context.Context, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Info(ctx, v...)
 }
-func Infof(ctx context.Context, format string, v ...interface{}) {
-	GetLogger().Infof(ctx, format, v...)
+func (l *Logger) Infof(ctx context.Context, format string, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Infof(ctx, format, v...)
 }
-func Error(ctx context.Context, v ...interface{}) {
-	GetLogger().Error(ctx, v...)
+func (l *Logger) Error(ctx context.Context, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Error(ctx, v...)
 }
-func Errorf(ctx context.Context, format string, v ...interface{}) {
-	GetLogger().Errorf(ctx, format, v)
+func (l *Logger) Errorf(ctx context.Context, format string, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Errorf(ctx, format, v)
 }
-func Panic(ctx context.Context, v ...interface{}) {
-	GetLogger().Panic(ctx, v...)
+func (l *Logger) Panic(ctx context.Context, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer p.Put(l)
+	l.logger.Panic(ctx, v...)
 }
-func Panicf(ctx context.Context, format string, v ...interface{}) {
-	GetLogger().Panicf(ctx, format, v)
+func (l *Logger) Panicf(ctx context.Context, format string, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Panicf(ctx, format, v)
 }
-func Warn(ctx context.Context, v ...interface{}) {
-	GetLogger().Warn(ctx, v...)
+func (l *Logger) Warn(ctx context.Context, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Warn(ctx, v...)
 }
-func Warnf(ctx context.Context, format string, v ...interface{}) {
-	GetLogger().Warnf(ctx, format, v)
+func (l *Logger) Warnf(ctx context.Context, format string, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Warnf(ctx, format, v)
 }
-func Debug(ctx context.Context, v ...interface{}) {
-	GetLogger().Debug(ctx, v...)
+func (l *Logger) Debug(ctx context.Context, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Debug(ctx, v...)
 }
-func Debugf(ctx context.Context, format string, v ...interface{}) {
-	GetLogger().Debugf(ctx, format, v)
+func (l *Logger) Debugf(ctx context.Context, format string, v ...interface{}) {
+	if len(l.kv) > 0 {
+		ctx = context.WithValue(ctx, "kv", l.kv)
+	}
+	defer func() {
+		l.kv = nil
+		p.Put(l)
+	}()
+	l.logger.Debugf(ctx, format, v)
 }
 
-func Close(f func()) {
+func (l *Logger) Close(f func()) {
 	f()
-	GetLogger().close()
+	//GetLogger().close()
 }

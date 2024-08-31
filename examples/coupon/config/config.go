@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"github.com/yunduansing/gtools/database"
 	mysqltool "github.com/yunduansing/gtools/database/mysql"
 	"github.com/yunduansing/gtools/examples/coupon/model"
 	"github.com/yunduansing/gtools/logger"
@@ -42,12 +43,12 @@ func InitConfig() {
 
 	logger.InitLog(logConfig)
 
-	if err := mysqltool.InitMysql(model.WriteMysql, &writeMysqlConfig); err != nil {
-		logger.Error(context.TODO(), "Init WriteMysql err:", err)
+	if err := database.InitDb(model.WriteMysql, writeMysqlConfig); err != nil {
+		logger.GetLogger().Error(context.TODO(), "Init WriteMysql err:", err)
 		panic(err)
 	}
-	if err := mysqltool.InitMysql(model.ReadMysql, &readMysqlConfig); err != nil {
-		logger.Error(context.TODO(), "Init ReadMysql err:", err)
+	if err := database.InitDb(model.ReadMysql, readMysqlConfig); err != nil {
+		logger.GetLogger().Error(context.TODO(), "Init ReadMysql err:", err)
 		panic(err)
 	}
 

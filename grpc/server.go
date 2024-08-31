@@ -25,7 +25,7 @@ func RunWithTls(c ServerConfig, servers ...GrpcServerHandler) error {
 	if err != nil {
 		panic(err)
 	}
-	//grpc tls
+	//protocol tls
 	var opts []grpc.ServerOption
 	cre, err := credentials.NewServerTLSFromFile(c.TlsPem, c.TlsKey)
 	if err != nil {
@@ -42,7 +42,7 @@ func RunWithTls(c ServerConfig, servers ...GrpcServerHandler) error {
 		f(s)
 	}
 
-	logger.Infof(context.TODO(), "rpc server listening at %+v", lis.Addr())
+	logger.GetLogger().Infof(context.TODO(), "rpc server listening at %+v", lis.Addr())
 	err = s.Serve(lis)
 	return err
 }
@@ -70,7 +70,7 @@ func Run(c ServerConfig, servers ...GrpcServerHandler) error {
 	for _, f := range servers {
 		f(s)
 	}
-	logger.Infof(context.TODO(), "rpc server listening at %+v", lis.Addr())
+	logger.GetLogger().Infof(context.TODO(), "rpc server listening at %+v", lis.Addr())
 	err = s.Serve(lis)
 	return err
 }

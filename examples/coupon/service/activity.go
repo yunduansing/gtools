@@ -2,11 +2,12 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"github.com/yunduansing/gtools/context"
+	"github.com/yunduansing/gtools/examples/apiTest/config"
 	"github.com/yunduansing/gtools/examples/coupon/model"
-	"github.com/yunduansing/gtools/examples/gintest/config"
 	"github.com/yunduansing/gtools/redistool"
 	"github.com/yunduansing/gtools/utils"
 	"gorm.io/gorm"
@@ -64,7 +65,7 @@ func loadActivity(ctx context.Context, req *UserGetCouponReq, activity *UserActi
 	}
 
 	distLockKey := fmt.Sprintf(activityFromDbKeyFormat, req.ActivityId, req.TemplateCode)
-	distLock := redistool.NewRedisLock(config.Redis, distLockKey)
+	distLock := redistool.NewRedisLock(config.Redis.UniversalClient, distLockKey)
 	distLockSuccess, err := distLock.AcquireBackoff(1000, 300*time.Microsecond, 10*time.Millisecond)
 	if err != nil {
 		ctx.Log.Errorf(ctx.Ctx, "领取优惠券，分布式锁获取失败：req=%+v,err=%+v", req, err)
@@ -82,16 +83,16 @@ func loadActivity(ctx context.Context, req *UserGetCouponReq, activity *UserActi
 	}
 	//第二步，加载活动数据
 	activityData, err := model.FindActivityById(req.ActivityId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		ctx.Log.Errorf(ctx.Ctx, "领取优惠券，从db查询活动数据失败：req=%+v,err=%+v", req, err)
 		return model.NewErrorCodeErr(model.ErrActivityCouponTooHot.Code, err)
 	}
-	if err == gorm.ErrRecordNotFound || activityData.Id == 0 {
+	if errors.Is(err, gorm.ErrRecordNotFound) || activityData.Id == 0 {
 		ctx.Log.Errorf(ctx.Ctx, "领取优惠券，活动数据不存在：req=%+v", req)
 		return model.ErrActivityNotExists
 	}
 	couponListData, err := model.FindActivityCouponList(req.ActivityId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		ctx.Log.Errorf(ctx.Ctx, "领取优惠券，从db查询优惠券数据失败：req=%+v,err=%+v", req, err)
 		return model.NewErrorCodeErr(model.ErrActivityCouponTooHot.Code, err)
 	}

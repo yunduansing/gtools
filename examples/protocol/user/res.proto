@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package user;
+
+option go_package="protocol/user";
+option java_package = "protocol/user";
+option java_multiple_files = true;
+
+message UserResponse{
+  int64 code=1;
+  string msg=2;
+  oneof data{
+    User userData=3;
+  }
+}
+
+message User{
+  int64 userId=1;
+  string userName=2;
+  string phone=3;
+}

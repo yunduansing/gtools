@@ -14,8 +14,6 @@ type Db struct {
 	Mysql *gorm.DB
 }
 
-var Context Db
-
 type DbFunc func(db *gorm.DB, span trace.Span) *gorm.DB
 
 func NewDb(c mysqltool.Config) (*Db, error) {
@@ -31,7 +29,7 @@ func (db *Db) Do(ctx context.Context, do DbFunc) {
 }
 
 func (db *Db) DoWithName(ctx context.Context, traceName string, do DbFunc) {
-	tracing.TraceFunc(ctx, traceName, func(span trace.Span) {
+	tracing.TraceFunc(ctx, traceName, func(c1 context.Context, span trace.Span) {
 		result := do(db.Mysql, span)
 		if result.Error != nil {
 			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", result.Error.Error()))
@@ -41,7 +39,7 @@ func (db *Db) DoWithName(ctx context.Context, traceName string, do DbFunc) {
 
 func (db *Db) Create(ctx context.Context, value any, do DbFunc, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.Create", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Create", func(c1 context.Context, span trace.Span) {
 		var d = db.Mysql
 		if do != nil {
 			d = do(d, span)
@@ -60,7 +58,7 @@ func (db *Db) Create(ctx context.Context, value any, do DbFunc, conds ...clause.
 
 func (db *Db) CreateBatch(ctx context.Context, value any, batchSize int, do DbFunc, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.Create", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Create", func(c1 context.Context, span trace.Span) {
 		var d = db.Mysql
 		if do != nil {
 			d = do(d, span)
@@ -79,7 +77,7 @@ func (db *Db) CreateBatch(ctx context.Context, value any, batchSize int, do DbFu
 
 func (db *Db) Update(ctx context.Context, column string, value any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.Update", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Update", func(c1 context.Context, span trace.Span) {
 		var d = db.Mysql
 		if do != nil {
 			d = do(d, span)
@@ -94,7 +92,7 @@ func (db *Db) Update(ctx context.Context, column string, value any, do DbFunc) *
 
 func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.Updates", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Updates", func(c1 context.Context, span trace.Span) {
 		var d = db.Mysql
 		if do != nil {
 			d = do(d, span)
@@ -150,7 +148,7 @@ func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause
 //	t.Log(newUser)
 func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.Save", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Save", func(c1 context.Context, span trace.Span) {
 		var d = db.Mysql
 		if len(conds) > 0 {
 			d = d.Clauses(conds...)
@@ -194,7 +192,7 @@ func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *
 //	  t.Log(count, users)
 func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.Find", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Find", func(c1 context.Context, span trace.Span) {
 		d := db.Mysql
 		if do != nil {
 			d = do(d, span)
@@ -231,7 +229,7 @@ func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 //	}).Error
 func (db *Db) First(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.First", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.First", func(c1 context.Context, span trace.Span) {
 		d := db.Mysql
 		if do != nil {
 			d = do(d, span)
@@ -247,7 +245,7 @@ func (db *Db) First(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 // Transaction wrap gorm Transaction
 func (db *Db) Transaction(ctx context.Context, do func(tx *gorm.DB, span trace.Span) error) error {
 	var err error
-	tracing.TraceFunc(ctx, "gorm.Transaction", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.Transaction", func(c1 context.Context, span trace.Span) {
 		err = db.Mysql.Transaction(func(tx *gorm.DB) error {
 			return do(tx, span)
 		})
@@ -267,7 +265,7 @@ func (db *Db) Transaction(ctx context.Context, do func(tx *gorm.DB, span trace.S
 // @batchSize batchSize
 func (db *Db) FindInBatch(ctx context.Context, dest any, batchSize int, do func(tx *gorm.DB, span trace.Span) error) *gorm.DB {
 	var result *gorm.DB
-	tracing.TraceFunc(ctx, "gorm.FindInBatch", func(span trace.Span) {
+	tracing.TraceFunc(ctx, "db.FindInBatch", func(c1 context.Context, span trace.Span) {
 		result = db.Mysql.FindInBatches(&dest, batchSize, func(tx *gorm.DB, batch int) error {
 			return do(tx, span)
 		})

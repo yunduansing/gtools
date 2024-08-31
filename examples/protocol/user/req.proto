@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package user;
+
+option go_package="protocol/user";
+option java_package = "protocol/user";
+option java_multiple_files = true;
+
+message GetUserReq{
+  int64 userId=1;
+  string userName=2;
+}

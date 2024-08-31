@@ -70,8 +70,8 @@ func findAllOrders(db *gorm.DB) {
 	var orders []Order
 	err := db.Preload("Goods").Find(&orders).Error
 	if err != nil {
-		logger.Error(context.Background(), "find orders err:", err)
+		logger.GetLogger().Error(context.Background(), "find orders err:", err)
 		return
 	}
-	logger.Info(context.Background(), "find orders list:", orders)
+	logger.GetLogger().Info(context.Background(), "find orders list:", orders)
 }

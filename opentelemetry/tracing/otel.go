@@ -13,12 +13,12 @@ func InitOtelTracer(serviceName string) {
 	tracer = otel.Tracer(serviceName)
 }
 
-func TraceFunc(ctx context.Context, spanName string, do func(span trace.Span)) {
+func TraceFunc(ctx context.Context, spanName string, do func(ctx context.Context, span trace.Span)) {
 
 	// Create a root span (a trace) to measure some operation.
-	_, span := tracer.Start(ctx, spanName)
+	ctx, span := tracer.Start(ctx, spanName)
 	// End the span when the operation we are measuring is done.
 	defer span.End()
 
-	do(span)
+	do(ctx, span)
 }

@@ -13,21 +13,33 @@ var (
 	Limiter        *redis_rate.Limiter
 	LimitPerSecond int
 	IsLimiterOpen  bool
+	Uptrace        UptraceConfig
 )
 
 func InitConfig() {
-	logger.InitLog(logger.Config{})
+	Config = ServiceConfig{
+		ServiceName:          "apiTest",
+		IsMetricsOpen:        true,
+		IsTracingOpen:        true,
+		IsRequestLimiterOpen: true,
+		Env:                  "dev",
+	}
+	Uptrace = UptraceConfig{
+		Version: "v1.0.0",
+		Dsn:     "http://project2_secret_token@192.168.2.46:14317/1",
+	}
+	logger.InitLog(logger.Config{ServiceName: Config.ServiceName, FilePath: "./logs"})
 	initRedis()
 	Port = 8080
-	LimitPerSecond = 1
+	LimitPerSecond = 10000
 	initLimiter()
 }
 
 func initRedis() {
 	Redis = redistool.New(redistool.Config{
-		Addr:     []string{""},
+		Addr:     []string{"192.168.2.44:16379"},
 		Password: "",
-		DB:       0,
+		DB:       5,
 	})
 }
 

@@ -23,7 +23,7 @@ func Init() {
 		//metric.WithUnit(metric.Seo)
 	)
 	if err != nil {
-		logger.Errorf(context.Background(), "Failed to create histogram:%s", err)
+		logger.GetLogger().Errorf(context.Background(), "Failed to create histogram:%s", err)
 
 	}
 
@@ -31,7 +31,7 @@ func Init() {
 		metric.WithDescription("API Request Counter"),
 	)
 	if err != nil {
-		logger.Errorf(context.Background(), "Failed to create counter:%s", err)
+		logger.GetLogger().Errorf(context.Background(), "Failed to create counter:%s", err)
 
 	}
 }
@@ -63,5 +63,6 @@ func ApiRequestCounterMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		labels := getApiRequestLabels(c, time.Now())
 		apiRequestCounter.Add(c.Request.Context(), 1, metric.WithAttributeSet(labels))
+		c.Next()
 	}
 }
