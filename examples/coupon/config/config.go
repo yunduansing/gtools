@@ -6,7 +6,6 @@ import (
 	mysqltool "github.com/yunduansing/gtools/database/mysql"
 	"github.com/yunduansing/gtools/examples/coupon/model"
 	"github.com/yunduansing/gtools/logger"
-	"github.com/yunduansing/gtools/redistool"
 	"github.com/yunduansing/gtools/yaml"
 )
 
@@ -18,14 +17,14 @@ var (
 )
 
 var (
-	Redis *redistool.Client
+	Redis *redis.Client
 )
 
 type App struct {
 	Name  string
 	Port  int
 	Mysql mysqltool.Config
-	Redis redistool.Config
+	Redis redis.Config
 	Log   logger.Config
 }
 
@@ -56,5 +55,5 @@ func InitConfig() {
 }
 
 func initRedis() {
-	Redis = redistool.New(app.Redis)
+	Redis = redis.New(app.Redis)
 }

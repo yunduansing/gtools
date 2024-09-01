@@ -121,20 +121,17 @@ func (s *UserLoginService) GetUserLoginInfoByTokenFromCache(token string) (*User
 		result, err = config.Redis.Get(ctx, userLoginKeyPrefix+token)
 		if err != nil {
 			s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
-			span.RecordError(err)
 			return err
 		}
 		err = json.Unmarshal(utils.StringToByte(result), &userLoginData)
 		if err != nil {
 			s.ctx.Log.Error(ctx, "json.Unmarshal loginData from redis error:", err)
-			span.RecordError(err)
 			return err
 		}
 
 		if userLoginData.LoginTimeout < time.Now().Unix() {
 			err = model.NewMyError(401, "login timeout")
 			s.ctx.Log.Error(ctx, "login timeout error:", err)
-			span.RecordError(err)
 			return err
 		}
 		return nil

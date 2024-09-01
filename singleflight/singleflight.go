@@ -3,7 +3,6 @@ package singleflight
 import (
 	"fmt"
 	context2 "github.com/yunduansing/gtools/context"
-	"github.com/yunduansing/gtools/redistool"
 	"sync"
 	"time"
 )
@@ -11,7 +10,7 @@ import (
 type SingleFlight struct {
 	sync.Mutex
 	c      map[string]*Call
-	locker *redistool.Locker
+	locker *redis.Locker
 	ctx    context2.Context
 }
 
@@ -19,8 +18,8 @@ type Call struct {
 	exec func()
 }
 
-func NewSingleFlight(ctx context2.Context, cli *redistool.Client, key string) *SingleFlight {
-	locker := redistool.NewRedisLockWithContext(ctx, cli.UniversalClient, key)
+func NewSingleFlight(ctx context2.Context, cli *redis.Client, key string) *SingleFlight {
+	locker := redis.NewRedisLockWithContext(ctx, cli.UniversalClient, key)
 	return &SingleFlight{
 		c:      make(map[string]*Call),
 		locker: locker,

@@ -8,7 +8,6 @@ import (
 	"github.com/yunduansing/gtools/context"
 	"github.com/yunduansing/gtools/examples/apiTest/config"
 	"github.com/yunduansing/gtools/examples/coupon/model"
-	"github.com/yunduansing/gtools/redistool"
 	"github.com/yunduansing/gtools/utils"
 	"gorm.io/gorm"
 	"strconv"
@@ -65,7 +64,7 @@ func loadActivity(ctx context.Context, req *UserGetCouponReq, activity *UserActi
 	}
 
 	distLockKey := fmt.Sprintf(activityFromDbKeyFormat, req.ActivityId, req.TemplateCode)
-	distLock := redistool.NewRedisLock(config.Redis.UniversalClient, distLockKey)
+	distLock := redis.NewRedisLock(config.Redis.UniversalClient, distLockKey)
 	distLockSuccess, err := distLock.AcquireBackoff(1000, 300*time.Microsecond, 10*time.Millisecond)
 	if err != nil {
 		ctx.Log.Errorf(ctx.Ctx, "领取优惠券，分布式锁获取失败：req=%+v,err=%+v", req, err)

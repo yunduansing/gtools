@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/yunduansing/gtools/logger"
-	"github.com/yunduansing/gtools/redistool"
+	redistool "github.com/yunduansing/gtools/redis"
 )
 
 var (

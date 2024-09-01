@@ -2,13 +2,12 @@ package breaker
 
 import (
 	"github.com/sony/gobreaker"
-	"github.com/yunduansing/gtools/redistool"
 )
 
 type Config struct {
 	Sensitivity float64 //熔断器灵敏度，数值越大越敏感
 	MaxRequest  uint32
-	Redis       *redistool.RedisCli
+	Redis       *redis.RedisCli
 }
 
 const DefaultSensitivity = 0.8
