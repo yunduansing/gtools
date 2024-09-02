@@ -161,7 +161,7 @@ func TestDb_Transaction(t *testing.T) {
 		var existsUserVip UserVip
 		err = tx.Where("user_id=? and state=1", req.UserId).Order("end_time desc").First(&existsUserVip).Error
 		if !errors.Is(gorm.ErrRecordNotFound, err) {
-			logger.Error(c, "db find user vip fail", err)
+			logger.Error(c, "DB find user vip fail", err)
 			return err
 		}
 		start := time.Now()
@@ -182,7 +182,7 @@ func TestDb_Transaction(t *testing.T) {
 		newUserVip.EndTime = start.Unix()
 		err = tx.Create(&newUserVip).Error
 		if err != nil {
-			logger.Error(c, "db create user vip fail", err)
+			logger.Error(c, "DB create user vip fail", err)
 			return err
 		}
 		return nil

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	mysqltool "github.com/yunduansing/gtools/database/mysql"
+	"github.com/yunduansing/gtools/database/pg"
 	"github.com/yunduansing/gtools/opentelemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -11,7 +12,7 @@ import (
 )
 
 type Db struct {
-	Mysql *gorm.DB
+	DB *gorm.DB
 }
 
 type DbFunc func(db *gorm.DB, span trace.Span) *gorm.DB
@@ -21,18 +22,26 @@ func NewDb(c mysqltool.Config) (*Db, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Db{Mysql: db}, nil
+	return &Db{DB: db}, nil
+}
+
+func NewDbFromPostgres(c pg.Config) (*Db, error) {
+	db, err := pg.NewPostgres(&c)
+	if err != nil {
+		return nil, err
+	}
+	return &Db{DB: db}, nil
 }
 
 func (db *Db) Do(ctx context.Context, do DbFunc) {
-	db.DoWithName(ctx, "db.Do", do)
+	db.DoWithName(ctx, "DB.Do", do)
 }
 
 func (db *Db) DoWithName(ctx context.Context, traceName string, do DbFunc) {
 	tracing.TraceFunc(ctx, traceName, func(c1 context.Context, span trace.Span) {
-		result := do(db.Mysql, span)
+		result := do(db.DB, span)
 		if result.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", result.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", result.Error.Error()))
 
 			span.RecordError(result.Error)
 		}
@@ -41,8 +50,8 @@ func (db *Db) DoWithName(ctx context.Context, traceName string, do DbFunc) {
 
 func (db *Db) Create(ctx context.Context, value any, do DbFunc, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.Create", func(c1 context.Context, span trace.Span) {
-		var d = db.Mysql
+	tracing.TraceFunc(ctx, "DB.Create", func(c1 context.Context, span trace.Span) {
+		var d = db.DB
 		if do != nil {
 			d = do(d, span)
 		}
@@ -52,7 +61,7 @@ func (db *Db) Create(ctx context.Context, value any, do DbFunc, conds ...clause.
 
 		res = d.Create(value)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 
 			span.RecordError(res.Error)
 		}
@@ -62,8 +71,8 @@ func (db *Db) Create(ctx context.Context, value any, do DbFunc, conds ...clause.
 
 func (db *Db) CreateBatch(ctx context.Context, value any, batchSize int, do DbFunc, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.Create", func(c1 context.Context, span trace.Span) {
-		var d = db.Mysql
+	tracing.TraceFunc(ctx, "DB.Create", func(c1 context.Context, span trace.Span) {
+		var d = db.DB
 		if do != nil {
 			d = do(d, span)
 		}
@@ -73,7 +82,7 @@ func (db *Db) CreateBatch(ctx context.Context, value any, batchSize int, do DbFu
 
 		res = d.CreateInBatches(value, batchSize)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 
 			span.RecordError(res.Error)
 		}
@@ -83,14 +92,14 @@ func (db *Db) CreateBatch(ctx context.Context, value any, batchSize int, do DbFu
 
 func (db *Db) Update(ctx context.Context, column string, value any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.Update", func(c1 context.Context, span trace.Span) {
-		var d = db.Mysql
+	tracing.TraceFunc(ctx, "DB.Update", func(c1 context.Context, span trace.Span) {
+		var d = db.DB
 		if do != nil {
 			d = do(d, span)
 		}
 		res = d.Update(column, value)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 		}
 	})
 	return res
@@ -98,8 +107,8 @@ func (db *Db) Update(ctx context.Context, column string, value any, do DbFunc) *
 
 func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.Updates", func(c1 context.Context, span trace.Span) {
-		var d = db.Mysql
+	tracing.TraceFunc(ctx, "DB.Updates", func(c1 context.Context, span trace.Span) {
+		var d = db.DB
 		if do != nil {
 			d = do(d, span)
 		}
@@ -108,7 +117,7 @@ func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause
 		}
 		res = d.Updates(value)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 
 			span.RecordError(res.Error)
 		}
@@ -145,7 +154,7 @@ func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause
 //		Account:  req.Phone,
 //	}
 //
-//	err = db.Save(ctx,&newUser,clause.OnConflict{
+//	err = DB.Save(ctx,&newUser,clause.OnConflict{
 //		Columns:      []clause.Column{{Name: "phone"}},
 //		DoUpdates:    clause.Assignments(map[string]interface{}{"state": 1}),
 //	}).Error
@@ -156,14 +165,14 @@ func (db *Db) Updates(ctx context.Context, value any, do DbFunc, conds ...clause
 //	t.Log(newUser)
 func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.Save", func(c1 context.Context, span trace.Span) {
-		var d = db.Mysql
+	tracing.TraceFunc(ctx, "DB.Save", func(c1 context.Context, span trace.Span) {
+		var d = db.DB
 		if len(conds) > 0 {
 			d = d.Clauses(conds...)
 		}
 		res = d.Save(value)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 
 			span.RecordError(res.Error)
 		}
@@ -182,7 +191,7 @@ func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *
 // var users []User
 //
 //	var count int64
-//	err = db.Find(context.Background(), &users, func(tx *gorm.DB, span trace.Span) *gorm.DB {
+//	err = DB.Find(context.Background(), &users, func(tx *gorm.DB, span trace.Span) *gorm.DB {
 //	  tx = tx.Table("t_app_user a").Joins("left join t_user_vip b on a.user_id=b.user_id")
 //	  if req.UserId > 0 {
 //		tx = tx.Where("a.user_id=?", req.UserId)
@@ -202,14 +211,14 @@ func (db *Db) Save(ctx context.Context, value any, conds ...clause.Expression) *
 //	  t.Log(count, users)
 func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.Find", func(c1 context.Context, span trace.Span) {
-		d := db.Mysql
+	tracing.TraceFunc(ctx, "DB.Find", func(c1 context.Context, span trace.Span) {
+		d := db.DB
 		if do != nil {
 			d = do(d, span)
 		}
 		res = d.Find(dest)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 
 			span.RecordError(res.Error)
 		}
@@ -226,7 +235,7 @@ func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 // for example:
 //
 //	var user User
-//	err = db.First(context.Background(), &user, func(tx *gorm.DB, span trace.Span) *gorm.DB {
+//	err = DB.First(context.Background(), &user, func(tx *gorm.DB, span trace.Span) *gorm.DB {
 //	  tx = tx.Table("t_app_user a").Joins("left join t_user_vip b on a.user_id=b.user_id")
 //	  if req.UserId > 0 {
 //		tx = tx.Where("a.user_id=?", req.UserId)
@@ -241,14 +250,14 @@ func (db *Db) Find(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 //	}).Error
 func (db *Db) First(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 	var res *gorm.DB
-	tracing.TraceFunc(ctx, "db.First", func(c1 context.Context, span trace.Span) {
-		d := db.Mysql
+	tracing.TraceFunc(ctx, "DB.First", func(c1 context.Context, span trace.Span) {
+		d := db.DB
 		if do != nil {
 			d = do(d, span)
 		}
 		res = d.First(dest)
 		if res.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", res.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", res.Error.Error()))
 
 			span.RecordError(res.Error)
 		}
@@ -259,12 +268,12 @@ func (db *Db) First(ctx context.Context, dest any, do DbFunc) *gorm.DB {
 // Transaction wrap gorm Transaction
 func (db *Db) Transaction(ctx context.Context, do func(tx *gorm.DB, span trace.Span) error) error {
 	var err error
-	tracing.TraceFunc(ctx, "db.Transaction", func(c1 context.Context, span trace.Span) {
-		err = db.Mysql.Transaction(func(tx *gorm.DB) error {
+	tracing.TraceFunc(ctx, "DB.Transaction", func(c1 context.Context, span trace.Span) {
+		err = db.DB.Transaction(func(tx *gorm.DB) error {
 			return do(tx, span)
 		})
 		if err != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", err.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", err.Error()))
 			span.RecordError(err)
 		}
 	})
@@ -280,12 +289,12 @@ func (db *Db) Transaction(ctx context.Context, do func(tx *gorm.DB, span trace.S
 // @batchSize batchSize
 func (db *Db) FindInBatch(ctx context.Context, dest any, batchSize int, do func(tx *gorm.DB, span trace.Span) error) *gorm.DB {
 	var result *gorm.DB
-	tracing.TraceFunc(ctx, "db.FindInBatch", func(c1 context.Context, span trace.Span) {
-		result = db.Mysql.FindInBatches(&dest, batchSize, func(tx *gorm.DB, batch int) error {
+	tracing.TraceFunc(ctx, "DB.FindInBatch", func(c1 context.Context, span trace.Span) {
+		result = db.DB.FindInBatches(&dest, batchSize, func(tx *gorm.DB, batch int) error {
 			return do(tx, span)
 		})
 		if result.Error != nil {
-			span.SetAttributes(attribute.Bool("db.error", true), attribute.String("db.errorString", result.Error.Error()))
+			span.SetAttributes(attribute.Bool("DB.error", true), attribute.String("DB.errorString", result.Error.Error()))
 			span.RecordError(result.Error)
 		}
 	})

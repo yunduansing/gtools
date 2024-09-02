@@ -39,7 +39,7 @@ type UserActivityCouponGroupView struct {
 func FindUserActivityCouponGroup(activityId, userId int64,
 	templateCode string) (res *UserActivityCouponGroupView,
 	err error) {
-	err = mysqltool.Get(ReadMysql).Mysql.Model(&UseCoupon{}).Where("activity_id = ? and user_id and template_code = ?",
+	err = mysqltool.Get(ReadMysql).DB.Model(&UseCoupon{}).Where("activity_id = ? and user_id and template_code = ?",
 		activityId, userId, templateCode).Group("user_id," +
 		"template_code").Select("user_id,count(*) as num").Find(&res).Error
 	return
@@ -47,6 +47,6 @@ func FindUserActivityCouponGroup(activityId, userId int64,
 }
 
 func FindActivityUserImportList(activityId int64) (res []*ActivityUserImport, err error) {
-	err = mysqltool.Get(ReadMysql).Mysql.Where("activity_id = ?", activityId).Find(res).Error
+	err = mysqltool.Get(ReadMysql).DB.Where("activity_id = ?", activityId).Find(res).Error
 	return
 }

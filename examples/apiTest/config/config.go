@@ -6,6 +6,13 @@ import (
 	redistool "github.com/yunduansing/gtools/redis"
 )
 
+const (
+	EnvDev  = "dev"
+	EnvProd = "prod"
+	EnvTest = "test"
+	EnvUat  = "uat"
+)
+
 var (
 	Config         ServiceConfig
 	Redis          *redistool.Client
@@ -22,7 +29,7 @@ func InitConfig() {
 		IsMetricsOpen:        true,
 		IsTracingOpen:        true,
 		IsRequestLimiterOpen: true,
-		Env:                  "dev",
+		Env:                  EnvDev,
 	}
 	Uptrace = UptraceConfig{
 		Version: "v1.0.0",

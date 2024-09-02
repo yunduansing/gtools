@@ -16,7 +16,7 @@ func GetUser(c *apiContext.ApiContext) model.Response {
 	return model.Response{
 		Code:      200,
 		Msg:       "ok",
-		Data:      userCtx.GetUser(1066746931),
+		Data:      userCtx.GetUser(1),
 		RequestId: c.Ctx.GetRequestId(),
 	}
 }

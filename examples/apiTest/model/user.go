@@ -15,14 +15,15 @@ const (
 )
 
 type User struct {
-	UserId   int64  `json:"userId"`
-	UserName string `json:"userName"`
-	Phone    string `json:"phone"`
-	//State    UserStatus `json:"state" gorm:"type:enum('active','inactive','banned')"`
+	UserId   int64      `json:"userId"`
+	UserName string     `json:"userName"`
+	Phone    string     `json:"phone"`
+	State    UserStatus `json:"state"`
+	CreateAt int64      `json:"createAt"`
 }
 
 func (*User) TableName() string {
-	return "t_app_user"
+	return "users"
 }
 
 type UserLoginLog struct {
@@ -37,7 +38,7 @@ type UserLoginLog struct {
 }
 
 func (u *UserLoginLog) TableName() string {
-	return "t_app_user_login_log"
+	return "users_login_log"
 }
 
 func FindUserById(ctx *context.Context, id int64) (*User, error) {
