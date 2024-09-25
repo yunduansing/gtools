@@ -46,24 +46,28 @@ func init() {
 // NewRedisLock returns a Locker.
 func NewRedisLock(store redis.UniversalClient, key string) *Locker {
 	return &Locker{
-		store: store,
-		key:   key,
-		id:    Randn(randomLen),
-		ctx:   context2.NewContext(context.Background()),
+		store:   store,
+		key:     key,
+		id:      Randn(randomLen),
+		ctx:     context2.NewContext(context.Background()),
+		seconds: 10,
 	}
 }
 
 // NewRedisLockWithContext returns a Locker.
 func NewRedisLockWithContext(ctx context2.Context, store redis.UniversalClient, key string) *Locker {
 	return &Locker{
-		store: store,
-		key:   key,
-		id:    Randn(randomLen),
-		ctx:   ctx,
+		store:   store,
+		key:     key,
+		id:      Randn(randomLen),
+		ctx:     ctx,
+		seconds: 10,
 	}
 }
 
 // Acquire acquires the lock.
+//
+// 在获取锁之前可调用SetExpire()设置锁时间，默认锁10s
 //
 // @repeat  重试次数，默认不重试
 //
@@ -81,6 +85,7 @@ func (rl *Locker) Acquire(repeat int, wait time.Duration) (bool, error) {
 		}
 
 		seconds := atomic.LoadUint32(&rl.seconds)
+
 		start := time.Now()
 		resp, err := rl.store.Eval(context.Background(), lockCommand, []string{rl.key}, []string{
 			rl.id, strconv.Itoa(int(seconds)*millisPerSecond + tolerance),
@@ -117,6 +122,8 @@ func (rl *Locker) Acquire(repeat int, wait time.Duration) (bool, error) {
 }
 
 // AcquireBackoff acquires the lock using 指数退避策略.
+//
+// 在获取锁之前可调用SetExpire()设置锁时间，默认锁10s
 //
 // @repeat  重试次数，默认不重试
 //

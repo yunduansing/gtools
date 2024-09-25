@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"os"
 	"strings"
+	"time"
 )
 
 type zapLog struct {
@@ -231,12 +232,14 @@ func getLogWriter(c Config) *zap.Logger {
 	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(utils.ChineseTimeLayout) //指定时间格式
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder                    //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
 	//encoderConfig.EncodeCaller = zapcore.FullCallerEncoder      	//显示完整文件路径
+	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.DateTime + ".000")
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
 
 	encoderFileConfig := zap.NewProductionEncoderConfig()                               //NewJSONEncoder()输出json格式，NewConsoleEncoder()输出普通文本格式
 	encoderFileConfig.EncodeTime = zapcore.TimeEncoderOfLayout(utils.ChineseTimeLayout) //指定时间格式
 	//encoderFileConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder                    //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
 	//encoderConfig.EncodeCaller = zapcore.FullCallerEncoder      	//显示完整文件路径
+	encoderFileConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.DateTime + ".000")
 	encoderFile := zapcore.NewConsoleEncoder(encoderFileConfig)
 
 	//日志级别
@@ -277,7 +280,8 @@ func getLogWriter(c Config) *zap.Logger {
 	if len(c.ServiceName) > 0 {
 		options = append(options, zap.Fields(zap.String("service", c.ServiceName)))
 	}
-	options = append(options, []zap.Option{zap.AddCaller(), zap.AddCallerSkip(2), zap.AddStacktrace(zapcore.ErrorLevel)}...)
+	options = append(options, []zap.Option{zap.AddCaller(), zap.AddCallerSkip(2),
+		zap.AddStacktrace(zapcore.ErrorLevel)}...)
 
 	return zap.New(zapcore.NewTee(coreArr...), options...) //zap.AddCaller()为显示文件名和行号，可省略
 }

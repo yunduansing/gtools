@@ -25,13 +25,13 @@ func TestClient_WrapDoWithTracing(t *testing.T) {
 		Addr:     []string{"localhost:6379"},
 		Password: "pass",
 	})
-	cli.WrapDoWithTracing(context.Background(), "redis.Get", func(ctx context.Context, span trace.Span) {
+	cli.WrapDoWithTracing(context.Background(), "redis.Get", func(ctx context.Context, span trace.Span) error {
 		r, err := cli.Get(ctx, "KEY")
 		if err != nil {
 			logger.GetLogger().Error(ctx, "redis.Get error", err)
-			span.RecordError(err)
-			return
+			return err
 		}
 		t.Log("result:", r)
+		return nil
 	})
 }

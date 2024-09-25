@@ -13,13 +13,13 @@ type Context struct {
 	requestTime string
 }
 
-type Option func(Context)
+type Option func(*Context)
 
 func NewContext(ctx c.Context, opts ...Option) Context {
 	myCtx := Context{}
 	myCtx.Ctx = ctx
 	for _, opt := range opts {
-		opt(myCtx)
+		opt(&myCtx)
 	}
 
 	myCtx.Log = logger.GetLogger()
@@ -35,14 +35,14 @@ func (ctx *Context) GetRequestTime() string {
 }
 
 func WithRequestId(requestId string) Option {
-	return func(ctx Context) {
+	return func(ctx *Context) {
 		ctx.Ctx = c.WithValue(ctx.Ctx, "requestId", requestId)
 		ctx.requestId = requestId
 	}
 }
 
 func WithRequestTime(requestTime string) Option {
-	return func(ctx Context) {
+	return func(ctx *Context) {
 		ctx.Ctx = c.WithValue(ctx.Ctx, "requestTime", requestTime)
 		ctx.requestTime = requestTime
 	}

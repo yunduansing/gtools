@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sony/sonyflake"
 	"net"
@@ -124,4 +125,8 @@ func Int64() int64 {
 func Uint64() uint64 {
 	id, _ := core.NextID()
 	return id
+}
+
+func NewIDFromUint64() string {
+	return fmt.Sprint(Uint64())
 }
