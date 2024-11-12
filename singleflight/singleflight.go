@@ -27,6 +27,9 @@ func SingleFlight(ctx context2.Context, store *redistool.Client, key string, res
 			return err
 		}
 		if len(get) > 0 && err == nil {
+			if get == "null" { //处理value实际不存在的情况
+				return nil
+			}
 			err = json.Unmarshal(utils.StringToByte(get), &res)
 			if err != nil {
 				ctx.Log.Error(ctx1, "Unmarshal data from redis:", err)
