@@ -16,6 +16,7 @@ import (
 var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // SingleFlight 用于实现单次请求处理的逻辑
+// 防 缓存击穿、缓存穿透和缓存雪崩
 func SingleFlight(ctx context2.Context, store *redistool.Client, key string, res any, fn func() (any, error), lockTimeout time.Duration, cacheTTL time.Duration) (err error) {
 	// 首先检查缓存是否存在
 	store.WrapDoWithTracing(ctx.Ctx, key, func(ctx1 context.Context, span trace.Span) error {
