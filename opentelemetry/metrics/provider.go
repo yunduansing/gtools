@@ -3,6 +3,7 @@ package metrics
 import (
 	"github.com/yunduansing/gtools/logger"
 	"golang.org/x/net/context"
+	"os"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -23,7 +24,8 @@ func InitMetricsProvider(exporterEndpoint, serviceName, version, uptraceDsn stri
 		otlpmetrichttp.WithCompression(otlpmetrichttp.GzipCompression),
 		otlpmetrichttp.WithHeaders(map[string]string{
 			// Set the Uptrace DSN here or use UPTRACE_DSN env var.
-			"uptrace-dsn": uptraceDsn,
+			"uptrace-dsn": os.Getenv("uptrace-dsn"),
+			"token":       "102c1a557c314fc28198acd017960843",
 		}),
 	)
 	if err != nil {

@@ -16,6 +16,7 @@ const (
 var (
 	Config         ServiceConfig
 	Redis          *redistool.Client
+	Host           string
 	Port           int
 	Limiter        *redis_rate.Limiter
 	LimitPerSecond int
@@ -37,7 +38,8 @@ func InitConfig() {
 	}
 	logger.InitLog(logger.Config{ServiceName: Config.ServiceName, FilePath: "./logs"})
 	initRedis()
-	Port = 8080
+	Host = "0.0.0.0"
+	Port = 8888
 	LimitPerSecond = 10000
 	initLimiter()
 }
