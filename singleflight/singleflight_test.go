@@ -31,7 +31,7 @@ func TestSingleFlight(t *testing.T) {
 
 	err := SingleFlight(context2.NewContext(context.Background()), rdb, key, &user, func() (r any, err error) {
 		<-time.After(time.Second)
-		return nil, nil
+		return User{Id: 1, Name: "哈哈"}, nil
 	}, time.Second, time.Minute)
 	if err != nil {
 		t.Error(err)

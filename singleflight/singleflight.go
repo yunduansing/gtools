@@ -16,81 +16,62 @@ import (
 var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // SingleFlight 用于实现单次请求处理的逻辑
-// 防 缓存击穿、缓存穿透和缓存雪崩
+// 防 缓存击穿、缓存穿透
 func SingleFlight(ctx context2.Context, store *redistool.Client, key string, res any, fn func() (any, error), lockTimeout time.Duration, cacheTTL time.Duration) (err error) {
-	// 首先检查缓存是否存在
 	store.WrapDoWithTracing(ctx.Ctx, key, func(ctx1 context.Context, span trace.Span) error {
-		var get string
-		get, err = store.Get(ctx1, key)
-		if err != nil && !errors.Is(err, redis.Nil) {
-			ctx.Log.Error(ctx1, "get from redis:", err)
+		var exists, locked bool
+		// 检查缓存
+		if exists, err = checkCache(ctx, store, key, &res); exists || err != nil {
 			return err
 		}
-		if len(get) > 0 && err == nil {
-			if get == "null" { //处理value实际不存在的情况
-				return nil
-			}
-			err = json.Unmarshal(utils.StringToByte(get), &res)
-			if err != nil {
-				ctx.Log.Error(ctx1, "Unmarshal data from redis:", err)
-				return err
-			}
-			return nil
-		}
 
-		// 如果缓存不存在，尝试获取锁
+		// 尝试获取锁
 		lock := redistool.NewRedisLockWithContext(ctx, store.UniversalClient, key+":lock")
 		if lockTimeout > 0 {
 			lock.SetExpire(int(lockTimeout.Seconds()))
 		}
 
-		var locked bool
-		locked, err = lock.Acquire(0, 0)
+		locked, err = lock.Acquire(100, 0)
 		if err != nil {
+			ctx.Log.Errorf(ctx1, "get lock %s:lock fail:%s", key, err)
 			return err
 		}
-
 		if !locked {
 			return nil
 		}
-
 		defer lock.Release()
-		// 获取锁成功，再次检查缓存是否存在
-		get, err = store.Get(ctx1, key)
-		if err != nil && !errors.Is(err, redis.Nil) {
-			ctx.Log.Error(ctx1, "get from redis:", err)
+
+		// 再次检查缓存
+		if exists, err = checkCache(ctx, store, key, &res); exists || err != nil {
 			return err
 		}
-		if len(get) > 0 && err == nil {
-			if get == "null" { //处理value实际不存在的情况
-				return nil
-			}
-			err = json.Unmarshal(utils.StringToByte(get), &res)
-			if err != nil {
-				ctx.Log.Error(ctx1, "Unmarshal data from redis:", err)
-				return err
-			}
-			return nil
-		}
 
-		// 缓存仍然不存在，执行函数并缓存结果
+		// 执行函数获取结果并缓存
 		res, err = fn()
 		if err != nil {
 			return err
 		}
-		if res == nil { //不存在的数据，缓存3-5s
-			ttl := random.Intn(6)
-			if ttl < 3 {
-				ttl = ttl + 3
-			}
-			cacheTTL = time.Duration(ttl) * time.Second
+		if res == nil {
+			cacheTTL = time.Duration(random.Intn(3)+3) * time.Second
 		}
-		if err = store.Set(ctx.Ctx, key, utils.ToJsonString(res), cacheTTL).Err(); err != nil {
-			return err
-		}
-
-		return nil
+		return store.Set(ctx.Ctx, key, utils.ToJsonString(res), cacheTTL).Err()
 	})
-
 	return err
+}
+
+// checkCache 封装缓存检查逻辑，避免重复代码
+func checkCache(ctx context2.Context, store *redistool.Client, key string, res any) (exists bool, err error) {
+	get, err := store.Get(ctx.Ctx, key)
+	if err != nil && !errors.Is(err, redis.Nil) {
+		ctx.Log.Errorf(ctx.Ctx, "checkCache %s err:%s", key, err)
+		return false, err
+	}
+	if get == "null" {
+		return true, nil
+	}
+	if errors.Is(err, redis.Nil) || len(get) == 0 {
+		return false, nil
+	}
+	err = json.Unmarshal(utils.StringToByte(get), &res)
+	return err == nil, err
 }
