@@ -47,13 +47,14 @@ func SingleFlight(ctx context2.Context, store *redistool.Client, key string, res
 		}
 
 		// 执行函数获取结果并缓存
-		res, err = fn()
+		data, err := fn()
 		if err != nil {
 			return err
 		}
 		if res == nil {
 			cacheTTL = time.Duration(random.Intn(3)+3) * time.Second
 		}
+		res = &data
 		return store.Set(ctx.Ctx, key, utils.ToJsonString(res), cacheTTL).Err()
 	})
 	return err
