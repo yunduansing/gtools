@@ -4,6 +4,7 @@ import (
 	c "context"
 	"github.com/yunduansing/gtools/logger"
 	"github.com/yunduansing/gtools/utils"
+	"google.golang.org/grpc/metadata"
 )
 
 type Context struct {
@@ -50,4 +51,12 @@ func WithRequestTime(requestTime string) Option {
 
 func GenRequestIdByUUID() string {
 	return utils.UUID()
+}
+
+func (ctx *Context) GetContext() c.Context {
+	md := make(map[string]string)
+	md["requestid"] = ctx.GetRequestId()
+	md["requesttime"] = ctx.GetRequestTime()
+	cc := metadata.NewIncomingContext(ctx.Ctx, metadata.New(md))
+	return cc
 }

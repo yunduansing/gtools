@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
+	"protocol/middleware"
 	"protocol/server"
 	userpb "protocol/user"
 )
@@ -16,7 +17,7 @@ func main() {
 	err := grpctool.Run(
 		grpctool.ServerConfig{Port: 8080}, func(s *grpc.Server) {
 			userpb.RegisterUserServiceServer(s, &server.Server{})
-		}, grpc.StatsHandler(handler),
+		}, grpc.StatsHandler(handler), grpc.UnaryInterceptor(middleware.UnaryRespTimeServerInterceptor),
 	)
 
 	if err != nil {

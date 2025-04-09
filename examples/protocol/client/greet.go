@@ -2,10 +2,10 @@ package client
 
 import (
 	context2 "context"
-	"github.com/yunduansing/gtools/examples/protocol/middleware"
 	grpctool "github.com/yunduansing/gtools/grpc"
 	"github.com/yunduansing/gtools/logger"
 	"google.golang.org/grpc"
+	"protocol/middleware"
 	"sync"
 )
 
