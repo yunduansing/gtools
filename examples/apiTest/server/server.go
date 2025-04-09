@@ -1,13 +1,13 @@
 package main
 
 import (
+	"apiTest/config"
+	"apiTest/middleware"
+	"apiTest/routers"
+	"apiTest/service"
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/yunduansing/gtools/examples/apiTest/config"
-	"github.com/yunduansing/gtools/examples/apiTest/middleware"
-	"github.com/yunduansing/gtools/examples/apiTest/routers"
-	"github.com/yunduansing/gtools/examples/apiTest/service"
 	"github.com/yunduansing/gtools/logger"
 	"github.com/yunduansing/gtools/opentelemetry/metrics"
 	"github.com/yunduansing/gtools/opentelemetry/tracing"
@@ -17,7 +17,10 @@ import (
 func main() {
 	config.InitConfig()
 	middleware.Init()
-	metrics.InitMetricsProvider("192.168.2.46:4317", config.Config.ServiceName, config.Uptrace.Version, "uptrace-dsn=http://project2_secret_token@192.168.2.46:14317/1")
+	metrics.InitMetricsProvider(
+		"192.168.2.46:4317", config.Config.ServiceName, config.Uptrace.Version,
+		"uptrace-dsn=http://project2_secret_token@192.168.2.46:14317/1",
+	)
 	os.Setenv("uptrace-dsn", "http://project2_secret_token@192.168.2.46:14317/1")
 	tracing.InitOtelTracer(config.Config.ServiceName)
 	middleware.InitUptrace(config.Config.ServiceName, config.Uptrace.Version, config.Uptrace.Dsn, config.Config.Env)

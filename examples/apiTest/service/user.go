@@ -1,8 +1,10 @@
 package service
 
 import (
+	"apiTest/model"
 	"github.com/yunduansing/gtools/context"
-	"github.com/yunduansing/gtools/examples/apiTest/model"
+	"protocol/client"
+	userpb "protocol/user"
 )
 
 type UserService struct {
@@ -13,11 +15,15 @@ func NewUserService(ctx *context.Context) *UserService {
 	return &UserService{ctx: ctx}
 }
 
-func (u *UserService) GetUser(id int64) (res *model.User) {
+func (u *UserService) GetUser(id int64) (res *model.User, code int64) {
 	u.ctx.Log.Info(u.ctx.Ctx, "get user with id ", id)
-	res, err := model.FindUserById(u.ctx, id)
+	//res, err := model.FindUserById(u.ctx, id)
+	//if err != nil {
+	//	u.ctx.Log.Error(u.ctx.Ctx, "get user with id err：", err)
+	//}
+	getUser, code, err := client.GetUser(u.ctx.Ctx, &userpb.GetUserReq{})
 	if err != nil {
-		u.ctx.Log.Error(u.ctx.Ctx, "get user with id err：", err)
+		return nil, -1
 	}
-	return
+	return &model.User{UserId: getUser.UserId, UserName: getUser.UserName, Phone: getUser.Phone}, 0
 }

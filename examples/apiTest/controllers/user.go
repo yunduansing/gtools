@@ -1,10 +1,10 @@
 package controllers
 
 import (
+	"apiTest/apiContext"
+	"apiTest/model"
+	"apiTest/service"
 	"errors"
-	"github.com/yunduansing/gtools/examples/apiTest/apiContext"
-	"github.com/yunduansing/gtools/examples/apiTest/model"
-	"github.com/yunduansing/gtools/examples/apiTest/service"
 	model2 "github.com/yunduansing/gtools/examples/coupon/model"
 	"time"
 )
@@ -13,10 +13,11 @@ func GetUser(c *apiContext.ApiContext) model.Response {
 	c.Ctx.Log.WithField("controller", "User").Info(c.Ctx.Ctx, "get user")
 	<-time.After(time.Millisecond * 300)
 	userCtx := service.NewUserService(c.Ctx)
+	res, code := userCtx.GetUser(1)
 	return model.Response{
-		Code:      200,
+		Code:      code,
 		Msg:       "ok",
-		Data:      userCtx.GetUser(1),
+		Data:      res,
 		RequestId: c.Ctx.GetRequestId(),
 	}
 }

@@ -3,11 +3,11 @@ package model
 import "errors"
 
 type MyError struct {
-	Code int
+	Code int64
 	Msg  string
 }
 
-func NewMyError(code int, msg string) *MyError {
+func NewMyError(code int64, msg string) *MyError {
 	return &MyError{Code: code, Msg: msg}
 
 }
@@ -16,7 +16,7 @@ func (e *MyError) Error() string {
 	return e.Msg
 }
 
-func GetErrorResponse(code int, err error, resp *Response) {
+func GetErrorResponse(code int64, err error, resp *Response) {
 	var e *MyError
 	switch {
 	case errors.As(err, &e):

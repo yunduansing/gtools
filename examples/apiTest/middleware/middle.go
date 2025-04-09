@@ -1,16 +1,16 @@
 package middleware
 
 import (
+	"apiTest/apiContext"
+	"apiTest/config"
+	"apiTest/model"
+	"apiTest/service"
 	"bytes"
 	context2 "context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/yunduansing/gtools/context"
-	"github.com/yunduansing/gtools/examples/apiTest/apiContext"
-	"github.com/yunduansing/gtools/examples/apiTest/config"
-	"github.com/yunduansing/gtools/examples/apiTest/model"
-	"github.com/yunduansing/gtools/examples/apiTest/service"
 	"github.com/yunduansing/gtools/logger"
 	"io"
 	"net/http"
@@ -30,7 +30,9 @@ func RequestLimiter(c *gin.Context) {
 		c.Next()
 		return
 	}
-	res, err := config.Limiter.Allow(c.Request.Context(), c.Request.RequestURI, redis_rate.PerSecond(config.LimitPerSecond))
+	res, err := config.Limiter.Allow(
+		c.Request.Context(), c.Request.RequestURI, redis_rate.PerSecond(config.LimitPerSecond),
+	)
 	if err != nil {
 		logger.GetLogger().Error(c.Request.Context(), "request limit err:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -65,8 +67,10 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 
 		c.Set("requestId", requestId)
 		ctx := context2.WithValue(c.Request.Context(), "requestId", requestId)
-		myCtx := context.NewContext(ctx, context.WithRequestId(requestId),
-			context.WithRequestTime(start.Format(time.DateTime)))
+		myCtx := context.NewContext(
+			ctx, context.WithRequestId(requestId),
+			context.WithRequestTime(start.Format(time.DateTime)),
+		)
 		cc := apiContext.ApiContext{
 			Ctx:        &myCtx,
 			GinContext: c,

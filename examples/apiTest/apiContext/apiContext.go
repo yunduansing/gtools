@@ -1,9 +1,9 @@
 package apiContext
 
 import (
+	"apiTest/service"
 	"github.com/gin-gonic/gin"
 	"github.com/yunduansing/gtools/context"
-	"github.com/yunduansing/gtools/examples/apiTest/service"
 )
 
 type ApiContext struct {

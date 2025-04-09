@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/yunduansing/gtools/examples/apiTest/apiContext"
-	"github.com/yunduansing/gtools/examples/apiTest/model"
-	"github.com/yunduansing/gtools/examples/apiTest/service"
+	"apiTest/apiContext"
+	"apiTest/model"
+	"apiTest/service"
 )
 
 func UserLogin(c *apiContext.ApiContext) (resp model.Response) {
@@ -21,10 +21,12 @@ func UserLogin(c *apiContext.ApiContext) (resp model.Response) {
 		resp.Msg = "手机号不能为空"
 		return resp
 	}
-	loginData, err := service.NewUserLoginService(c.Ctx).UserLogin(&service.UserLoginReq{
-		Phone: req.Phone,
-		Code:  "",
-	})
+	loginData, err := service.NewUserLoginService(c.Ctx).UserLogin(
+		&service.UserLoginReq{
+			Phone: req.Phone,
+			Code:  "",
+		},
+	)
 	if err != nil {
 		model.GetErrorResponse(-1, err, &resp)
 		return resp
