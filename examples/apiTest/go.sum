@@ -144,6 +144,8 @@ github.com/uptrace/uptrace-go v1.35.0/go.mod h1:J2Xv5JS/u0zsq/90JYUH/hxa/kWQbfx/
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 github.com/yunduansing/gtools v0.0.0-20250409031703-3d334e36b2b7 h1:DaBA1OYaGKWk0cwc9eJ8WUJAzzWo8I97DPpZ6FVCems=
 github.com/yunduansing/gtools v0.0.0-20250409031703-3d334e36b2b7/go.mod h1:iHUrjdKVsGd4ySF8N+kwR749kMR5/8CMkPKLAUtRmYE=
+github.com/yunduansing/gtools v0.0.0-20250409075136-5f2896c98e76 h1:qeznd/hDkOMZfT31s5/1zql6vtYjGB0t2cDeH6beI+M=
+github.com/yunduansing/gtools v0.0.0-20250409075136-5f2896c98e76/go.mod h1:iHUrjdKVsGd4ySF8N+kwR749kMR5/8CMkPKLAUtRmYE=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.60.0 h1:jj/B7eX95/mOxim9g9laNZkOHKz/XCHG0G410SntRy4=

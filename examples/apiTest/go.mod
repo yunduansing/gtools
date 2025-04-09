@@ -12,7 +12,7 @@ require (
 	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/uptrace/uptrace-go v1.35.0
-	github.com/yunduansing/gtools v0.0.0-20250409031703-3d334e36b2b7
+	github.com/yunduansing/gtools v0.0.0-20250409075136-5f2896c98e76
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.60.0
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/metric v1.35.0

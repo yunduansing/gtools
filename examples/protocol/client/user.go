@@ -41,7 +41,7 @@ func GetUser(ctx context.Context, req *userpb.GetUserReq) (*userpb.User, int64, 
 	c := NewUserClient()
 	resp, err := c.GetUser(ctx.Ctx, req)
 	if err != nil {
-		logger.GetLogger().Panic(context2.Background(), "get user error:", err)
+		logger.GetLogger().Panic(ctx., "get user error:", err)
 		return nil, -1, err
 	}
 	if resp.Code != 0 {

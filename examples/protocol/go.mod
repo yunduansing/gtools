@@ -23,7 +23,7 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sony/sonyflake v1.1.0 // indirect
-	github.com/yunduansing/gtools v0.0.0-20250409031703-3d334e36b2b7 // indirect
+	github.com/yunduansing/gtools v0.0.0-20250409075136-5f2896c98e76 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
