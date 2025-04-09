@@ -6,6 +6,8 @@ import (
 	"github.com/yunduansing/gtools/context"
 	grpctool "github.com/yunduansing/gtools/grpc"
 	"github.com/yunduansing/gtools/logger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 	"protocol/middleware"
 	userpb "protocol/user"
@@ -20,12 +22,14 @@ var (
 func NewUserClient() userpb.UserServiceClient {
 	userOnce.Do(
 		func() {
+			handler := otelgrpc.NewClientHandler(otelgrpc.WithTracerProvider(otel.GetTracerProvider()))
 			conn, err := grpctool.Init(
 				grpctool.ClientConfig{
 					Address:   "localhost",
 					Port:      8080,
 					ServerPem: "",
-				}, grpc.WithUnaryInterceptor(middleware.UnaryReqTimeInterceptor),
+				}, grpc.WithStatsHandler(handler),
+				grpc.WithUnaryInterceptor(middleware.UnaryReqTimeInterceptor),
 			)
 			if err != nil {
 				logger.GetLogger().Panic(context2.Background(), "create user protocol client conn error:", err)
@@ -37,11 +41,11 @@ func NewUserClient() userpb.UserServiceClient {
 	return userpb.NewUserServiceClient(userClient)
 }
 
-func GetUser(ctx context.Context, req *userpb.GetUserReq) (*userpb.User, int64, error) {
+func GetUser(ctx *context.Context, req *userpb.GetUserReq) (*userpb.User, int64, error) {
 	c := NewUserClient()
-	resp, err := c.GetUser(ctx.Ctx, req)
+	resp, err := c.GetUser(ctx.GetContext(), req)
 	if err != nil {
-		logger.GetLogger().Panic(ctx., "get user error:", err)
+		logger.GetLogger().Panic(ctx.Ctx, "get user error:", err)
 		return nil, -1, err
 	}
 	if resp.Code != 0 {

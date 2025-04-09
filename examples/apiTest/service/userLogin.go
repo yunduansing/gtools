@@ -1,14 +1,14 @@
 package service
 
 import (
+	"apiTest/config"
+	"apiTest/model"
 	context2 "context"
 	"encoding/json"
 	"errors"
 	"github.com/redis/go-redis/v9"
 	"github.com/yunduansing/gtools/context"
 	"github.com/yunduansing/gtools/crypto"
-	"github.com/yunduansing/gtools/examples/apiTest/config"
-	"github.com/yunduansing/gtools/examples/apiTest/model"
 	"github.com/yunduansing/gtools/utils"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -73,40 +73,48 @@ func (s *UserLoginService) saveUserLoginInfoToCache(userInfo *UserLoginRes) erro
 		LoginTimeout: now.Add(loginTimeoutDuration).Unix(),
 	}
 	var err error
-	config.Redis.WrapDoWithTracing(s.ctx.Ctx, "redis.Set", func(ctx context2.Context, span trace.Span) error {
-		_, err = config.Redis.Pipelined(ctx, func(pipe redis.Pipeliner) error {
-			//首先查一下是否已经有登录信息，如果有就清除掉旧的登录信息
-			userIdKey := userLoginDataPrefix + strconv.FormatInt(userInfo.UserId, 10)
+	config.Redis.WrapDoWithTracing(
+		s.ctx.Ctx, "redis.Set", func(ctx context2.Context, span trace.Span) error {
+			_, err = config.Redis.Pipelined(
+				ctx, func(pipe redis.Pipeliner) error {
+					//首先查一下是否已经有登录信息，如果有就清除掉旧的登录信息
+					userIdKey := userLoginDataPrefix + strconv.FormatInt(userInfo.UserId, 10)
 
-			result, err := pipe.Get(ctx, userIdKey).Result()
-			if err != nil && !errors.Is(err, redis.Nil) {
-				s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
-				return err
-			}
-			if len(result) > 0 {
-				userOldTokenKey := userLoginKeyPrefix + result
-				err = pipe.Del(ctx, userOldTokenKey).Err()
-				if err != nil {
-					s.ctx.Log.Error(ctx, "redis.Del loginData error:", err)
-					return err
-				}
-			}
-			err = pipe.Set(ctx, userLoginKeyPrefix+userInfo.Token, utils.ToJsonString(dataCache), loginTimeoutDuration).Err()
-			if err != nil {
-				s.ctx.Log.Error(ctx, "redis.Set loginData error:", err)
-				return err
-			}
+					result, err := pipe.Get(ctx, userIdKey).Result()
+					if err != nil && !errors.Is(err, redis.Nil) {
+						s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
+						return err
+					}
+					if len(result) > 0 {
+						userOldTokenKey := userLoginKeyPrefix + result
+						err = pipe.Del(ctx, userOldTokenKey).Err()
+						if err != nil {
+							s.ctx.Log.Error(ctx, "redis.Del loginData error:", err)
+							return err
+						}
+					}
+					err = pipe.Set(
+						ctx, userLoginKeyPrefix+userInfo.Token, utils.ToJsonString(dataCache), loginTimeoutDuration,
+					).Err()
+					if err != nil {
+						s.ctx.Log.Error(ctx, "redis.Set loginData error:", err)
+						return err
+					}
 
-			err = pipe.Set(ctx, userIdKey, dataCache.Token,
-				loginTimeoutDuration).Err()
-			if err != nil {
-				s.ctx.Log.Error(ctx, "redis.Set loginData error:", err)
-				return err
-			}
-			return nil
-		})
-		return err
-	})
+					err = pipe.Set(
+						ctx, userIdKey, dataCache.Token,
+						loginTimeoutDuration,
+					).Err()
+					if err != nil {
+						s.ctx.Log.Error(ctx, "redis.Set loginData error:", err)
+						return err
+					}
+					return nil
+				},
+			)
+			return err
+		},
+	)
 	if err != nil {
 		return model.NewMyError(500, "redis error")
 	}
@@ -116,25 +124,27 @@ func (s *UserLoginService) saveUserLoginInfoToCache(userInfo *UserLoginRes) erro
 func (s *UserLoginService) GetUserLoginInfoByTokenFromCache(token string) (*UserLoginDataCache, error) {
 	var userLoginData UserLoginDataCache
 	var err error
-	config.Redis.WrapDoWithTracing(s.ctx.Ctx, "redis.Get", func(ctx context2.Context, span trace.Span) error {
-		var result string
-		result, err = config.Redis.Get(ctx, userLoginKeyPrefix+token)
-		if err != nil {
-			s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
-			return err
-		}
-		err = json.Unmarshal(utils.StringToByte(result), &userLoginData)
-		if err != nil {
-			s.ctx.Log.Error(ctx, "json.Unmarshal loginData from redis error:", err)
-			return err
-		}
+	config.Redis.WrapDoWithTracing(
+		s.ctx.Ctx, "redis.Get", func(ctx context2.Context, span trace.Span) error {
+			var result string
+			result, err = config.Redis.Get(ctx, userLoginKeyPrefix+token)
+			if err != nil {
+				s.ctx.Log.Error(ctx, "redis.Get loginData error:", err)
+				return err
+			}
+			err = json.Unmarshal(utils.StringToByte(result), &userLoginData)
+			if err != nil {
+				s.ctx.Log.Error(ctx, "json.Unmarshal loginData from redis error:", err)
+				return err
+			}
 
-		if userLoginData.LoginTimeout < time.Now().Unix() {
-			err = model.NewMyError(401, "login timeout")
-			s.ctx.Log.Error(ctx, "login timeout error:", err)
-			return err
-		}
-		return nil
-	})
+			if userLoginData.LoginTimeout < time.Now().Unix() {
+				err = model.NewMyError(401, "login timeout")
+				s.ctx.Log.Error(ctx, "login timeout error:", err)
+				return err
+			}
+			return nil
+		},
+	)
 	return &userLoginData, err
 }

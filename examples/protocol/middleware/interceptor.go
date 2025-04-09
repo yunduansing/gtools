@@ -56,7 +56,7 @@ func UnaryRespTimeServerInterceptor(
 			Errorf(ctx, "rpc call failed with handler error: %v", err)
 	} else {
 		logger.GetLogger().WithField("method", info.FullMethod).
-			WithField("duration", time.Since(start)).
+			WithField("duration", time.Since(start).String()).
 			WithField("req", req).
 			WithField("reply", reply).
 			Infof(ctx, "rpc call success response")

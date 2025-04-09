@@ -21,7 +21,7 @@ func (u *UserService) GetUser(id int64) (res *model.User, code int64) {
 	//if err != nil {
 	//	u.ctx.Log.Error(u.ctx.Ctx, "get user with id err：", err)
 	//}
-	getUser, code, err := client.GetUser(u.ctx.Ctx, &userpb.GetUserReq{})
+	getUser, code, err := client.GetUser(u.ctx, &userpb.GetUserReq{})
 	if err != nil {
 		return nil, -1
 	}
