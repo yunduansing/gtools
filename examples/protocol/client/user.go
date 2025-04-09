@@ -15,17 +15,21 @@ var (
 )
 
 func NewUserClient() *grpc.ClientConn {
-	userOnce.Do(func() {
-		conn, err := grpctool.Init(grpctool.ClientConfig{
-			Address:   "",
-			Port:      0,
-			ServerPem: "",
-		}, grpc.WithUnaryInterceptor(middleware.UnaryReqTimeInterceptor))
-		if err != nil {
-			logger.Panic(context2.Background(), "create user protocol client conn error:", err)
-			panic(err)
-		}
-		userClient = conn
-	})
+	userOnce.Do(
+		func() {
+			conn, err := grpctool.Init(
+				grpctool.ClientConfig{
+					Address:   "",
+					Port:      0,
+					ServerPem: "",
+				}, grpc.WithUnaryInterceptor(middleware.UnaryReqTimeInterceptor),
+			)
+			if err != nil {
+				logger.GetLogger().Panic(context2.Background(), "create user protocol client conn error:", err)
+				panic(err)
+			}
+			userClient = conn
+		},
+	)
 	return userClient
 }
