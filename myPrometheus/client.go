@@ -1,4 +1,4 @@
-package prometheus
+package myPrometheus
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -8,10 +8,12 @@ import (
 )
 
 var (
-	cpuTemp = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "cpu_temperature_celsius",
-		Help: "Current temperature of the CPU.",
-	})
+	cpuTemp = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "cpu_temperature_celsius",
+			Help: "Current temperature of the CPU.",
+		},
+	)
 	hdFailures = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "hd_errors_total",

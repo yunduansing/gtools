@@ -12,21 +12,22 @@ import (
 )
 
 type ServerConfig struct {
-	Port   int
-	TlsPem string
-	TlsKey string
+	Port          int
+	TlsPem        string
+	TlsKey        string
+	IsTracingOpen bool
 }
 
 type GrpcServerHandler func(server *grpc.Server)
 
-func RunWithTls(c ServerConfig, servers ...GrpcServerHandler) error {
+func RunWithTls(c ServerConfig, serverRegister GrpcServerHandler, opts ...grpc.ServerOption) error {
 	lis, err := net.Listen("tcp", ":"+fmt.Sprint(c.Port))
 
 	if err != nil {
 		panic(err)
 	}
 	//protocol tls
-	var opts []grpc.ServerOption
+
 	cre, err := credentials.NewServerTLSFromFile(c.TlsPem, c.TlsKey)
 	if err != nil {
 		panic(err)
@@ -38,9 +39,7 @@ func RunWithTls(c ServerConfig, servers ...GrpcServerHandler) error {
 	s := grpc.NewServer(opts...)
 	//register rpc server handler
 	//RegisterSchedulerServer(s, &Impl{})
-	for _, f := range servers {
-		f(s)
-	}
+	serverRegister(s)
 
 	logger.GetLogger().Infof(context.TODO(), "rpc server listening at %+v", lis.Addr())
 	err = s.Serve(lis)
@@ -60,16 +59,16 @@ var kasp = keepalive.ServerParameters{
 	Timeout:               1 * time.Second,  // Wait 1 second for the ping ack before assuming the connection is dead
 }
 
-func Run(c ServerConfig, servers ...GrpcServerHandler) error {
+func Run(c ServerConfig, serverRegister GrpcServerHandler, opts ...grpc.ServerOption) error {
 	lis, err := net.Listen("tcp", ":"+fmt.Sprint(c.Port))
 
 	if err != nil {
 		panic(err)
 	}
-	s := grpc.NewServer(grpc.KeepaliveEnforcementPolicy(kaep), grpc.KeepaliveParams(kasp))
-	for _, f := range servers {
-		f(s)
-	}
+	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
+	opts = append(opts, grpc.KeepaliveParams(kasp))
+	s := grpc.NewServer(opts...)
+	serverRegister(s)
 	logger.GetLogger().Infof(context.TODO(), "rpc server listening at %+v", lis.Addr())
 	err = s.Serve(lis)
 	return err
