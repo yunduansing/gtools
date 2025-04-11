@@ -146,6 +146,8 @@ github.com/yunduansing/gtools v0.0.0-20250409075136-5f2896c98e76 h1:qeznd/hDkOMZ
 github.com/yunduansing/gtools v0.0.0-20250409075136-5f2896c98e76/go.mod h1:iHUrjdKVsGd4ySF8N+kwR749kMR5/8CMkPKLAUtRmYE=
 github.com/yunduansing/gtools v0.0.0-20250409083548-8a0e7235610d h1:VIxPBpywuAn4tPmJRiR1KDXkgLhDgoXyPxhJhEBKROA=
 github.com/yunduansing/gtools v0.0.0-20250409083548-8a0e7235610d/go.mod h1:FKlP+tRvkaVd/kqqjGxdE3FLIJh/57eD8+MRNgaaxnQ=
+github.com/yunduansing/gtools v0.0.0-20250409092652-edfcb5895e18 h1:kfk9GnT+ax2X1k0GnsyqIvOYJYj5qctGCzfcctkCrg0=
+github.com/yunduansing/gtools v0.0.0-20250409092652-edfcb5895e18/go.mod h1:FKlP+tRvkaVd/kqqjGxdE3FLIJh/57eD8+MRNgaaxnQ=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.60.0 h1:jj/B7eX95/mOxim9g9laNZkOHKz/XCHG0G410SntRy4=
