@@ -56,6 +56,7 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 			requestId = xRequestId
 		} else {
 			requestId = context.GenRequestIdByUUID()
+			c.Request = c.Request.WithContext(context2.WithValue(c.Request.Context(), "requestId", requestId))
 		}
 
 		start := time.Now()
@@ -66,7 +67,8 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 		}
 
 		c.Set("requestId", requestId)
-		ctx := context2.WithValue(c.Request.Context(), "requestId", requestId)
+
+		ctx := c.Request.Context()
 		myCtx := context.NewContext(
 			ctx, context.WithRequestId(requestId),
 			context.WithRequestTime(start.Format(time.DateTime)),
@@ -106,7 +108,7 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 		resp := handler(&cc)
 		resp.RequestId = requestId
 		myCtx.Log.WithField("URL", c.Request.URL).
-			WithField("Cost", time.Since(start).String()).
+			WithField("Duration", time.Since(start).String()).
 			WithField("Method", c.Request.Method).
 			WithField("Resp", resp).
 			WithField("ClientIP", c.ClientIP()).

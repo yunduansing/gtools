@@ -15,10 +15,11 @@ var (
 	apiRequestCounter          metric.Int64Counter
 )
 
-func Init() {
+func InitMetrics() {
 	meter := otel.GetMeterProvider().Meter("api-metrics")
 	var err error
-	apiLatencyFloat64Histogram, err = meter.Float64Histogram("api_request_latency",
+	apiLatencyFloat64Histogram, err = meter.Float64Histogram(
+		"api_request_latency",
 		metric.WithDescription("API Request Latency"),
 		//metric.WithUnit(metric.Seo)
 	)
@@ -27,7 +28,8 @@ func Init() {
 
 	}
 
-	apiRequestCounter, err = meter.Int64Counter("api_request_counter",
+	apiRequestCounter, err = meter.Int64Counter(
+		"api_request_counter",
 		metric.WithDescription("API Request Counter"),
 	)
 	if err != nil {

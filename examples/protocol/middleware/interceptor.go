@@ -31,7 +31,7 @@ func UnaryReqTimeInterceptor(
 		WithField("duration", time.Since(start).String()).
 		WithField("req", req).
 		WithField("reply", reply).
-		Infof(ctx, "rpc call")
+		Infof(ctx, "middleware log rpc call")
 	return err
 }
 
@@ -41,7 +41,7 @@ func UnaryRespTimeServerInterceptor(
 	start := time.Now()
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		logger.GetLogger().Errorf(ctx, "rpc call failed with empty metadata")
+		logger.GetLogger().Errorf(ctx, "middleware log rpc call failed with empty metadata")
 	} else {
 		var requestId = md["requestid"]
 		if len(requestId) > 0 {
@@ -53,13 +53,13 @@ func UnaryRespTimeServerInterceptor(
 		logger.GetLogger().WithField("method", info.FullMethod).
 			WithField("duration", time.Since(start).String()).
 			WithField("req", req).
-			Errorf(ctx, "rpc call failed with handler error: %v", err)
+			Errorf(ctx, "middleware log rpc call failed with handler error: %v", err)
 	} else {
 		logger.GetLogger().WithField("method", info.FullMethod).
 			WithField("duration", time.Since(start).String()).
 			WithField("req", req).
 			WithField("reply", reply).
-			Infof(ctx, "rpc call success response")
+			Infof(ctx, "middleware log rpc call success response")
 	}
 	return reply, err
 }

@@ -53,10 +53,23 @@ func GenRequestIdByUUID() string {
 	return utils.UUID()
 }
 
+// cc 是最终返回的 context
 func (ctx *Context) GetContext() c.Context {
-	md := make(map[string]string)
-	md["requestid"] = ctx.GetRequestId()
-	md["requesttime"] = ctx.GetRequestTime()
-	cc := metadata.NewIncomingContext(ctx.Ctx, metadata.New(md))
-	return cc
+	// 拿原来的 context
+	baseCtx := ctx.Ctx
+
+	// 从已有 context 提取 metadata（保留 traceparent、grpc-trace-bin 等）
+	md, ok := metadata.FromOutgoingContext(baseCtx)
+	if !ok {
+		md = metadata.MD{}
+	} else {
+		md = md.Copy()
+	}
+
+	// 追加你自己的业务字段
+	md.Set("requestid", ctx.GetRequestId())
+	md.Set("requesttime", ctx.GetRequestTime())
+
+	// 合并后的 context 返回
+	return metadata.NewOutgoingContext(baseCtx, md)
 }

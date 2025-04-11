@@ -16,7 +16,7 @@ import (
 
 func main() {
 	config.InitConfig()
-	middleware.Init()
+	middleware.InitMetrics()
 	metrics.InitMetricsProvider(
 		"192.168.2.46:4317", config.Config.ServiceName, config.Uptrace.Version,
 		"uptrace-dsn=http://project2_secret_token@192.168.2.46:14317/1",
