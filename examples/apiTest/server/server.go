@@ -22,7 +22,7 @@ func main() {
 		"uptrace-dsn=http://project2_secret_token@192.168.2.46:14317/1",
 	)
 	os.Setenv("uptrace-dsn", "http://project2_secret_token@192.168.2.46:14317/1")
-	tracing.InitOtelTracer(config.Config.ServiceName)
+	tracing.InitTracer("localhost:4311", tracing.ExporterTempo, config.Config.ServiceName, "dev", "id")
 	middleware.InitUptrace(config.Config.ServiceName, config.Uptrace.Version, config.Uptrace.Dsn, config.Config.Env)
 	service.Init()
 	r := gin.Default()

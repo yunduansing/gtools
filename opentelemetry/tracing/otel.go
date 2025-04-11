@@ -28,7 +28,7 @@ func InitTracer(endpoint, exporter, serviceName, env, id string) {
 			return
 		}
 	case ExporterTempo:
-		_, err := tranceProviderTempo(context.Background(), endpoint, serviceName)
+		_, err := tracerProviderTempo(context.Background(), endpoint, serviceName)
 		if err != nil {
 			logger.GetLogger().Panicf(context.Background(), "tracer provider tempo error:%v", err)
 			return

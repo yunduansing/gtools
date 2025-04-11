@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	tracing.InitOtelTracer("grpc test")
+	tracing.InitTracer("localhost:4311", tracing.ExporterTempo, "grpc test", "dev", "id")
 	handler := otelgrpc.NewServerHandler(otelgrpc.WithTracerProvider(otel.GetTracerProvider()))
 	err := grpctool.Run(
 		grpctool.ServerConfig{Port: 8080}, func(s *grpc.Server) {

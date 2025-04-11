@@ -14,7 +14,7 @@ type TempoConfig struct {
 	ServiceName string `json:"serviceName"`
 }
 
-func tranceProviderTempo(ctx context.Context, endpoint, serviceName string) (*sdktrace.TracerProvider, error) {
+func tracerProviderTempo(ctx context.Context, endpoint, serviceName string) (*sdktrace.TracerProvider, error) {
 	// 创建 OTLP Trace Exporter（通过 HTTP 协议发送）
 	exporter, err := otlptracehttp.New(
 		ctx,
