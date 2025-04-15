@@ -85,7 +85,7 @@ func (ctx *Context) GetContext() c.Context {
 
 	// 将 OpenTelemetry 的 headers 合并到 metadata
 	for k, v := range carrier {
-		md[strings.ToLower(k)] = v
+		md.Set(strings.ToLower(k), v)
 	}
 
 	return metadata.NewOutgoingContext(baseCtx, md)
