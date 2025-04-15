@@ -4,6 +4,7 @@ import (
 	c "context"
 	"github.com/yunduansing/gtools/logger"
 	"github.com/yunduansing/gtools/utils"
+	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -70,6 +71,21 @@ func (ctx *Context) GetContext() c.Context {
 	md.Set("requestid", ctx.GetRequestId())
 	md.Set("requesttime", ctx.GetRequestTime())
 
-	// 合并后的 context 返回
+	// 确保 OpenTelemetry 的传播信息也被注入
+	baseCtx = metadata.NewOutgoingContext(baseCtx, md)
+
+	// 显式调用 OpenTelemetry 的 propagator 注入
+	propagator := propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	)
+	carrier := propagation.HeaderCarrier{}
+	propagator.Inject(baseCtx, carrier)
+
+	// 将 OpenTelemetry 的 headers 合并到 metadata
+	for k, v := range carrier {
+		md[k] = v
+	}
+
 	return metadata.NewOutgoingContext(baseCtx, md)
 }

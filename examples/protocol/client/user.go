@@ -8,6 +8,7 @@ import (
 	"github.com/yunduansing/gtools/logger"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/grpc"
 	"protocol/middleware"
 	userpb "protocol/user"
@@ -19,6 +20,15 @@ var (
 	userOnce   sync.Once
 )
 
+func init() {
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		),
+	)
+}
+
 func NewUserClient() userpb.UserServiceClient {
 	userOnce.Do(
 		func() {
@@ -28,8 +38,7 @@ func NewUserClient() userpb.UserServiceClient {
 					Address:   "localhost",
 					Port:      8080,
 					ServerPem: "",
-				}, grpc.WithStatsHandler(handler),
-				grpc.WithUnaryInterceptor(middleware.UnaryReqTimeInterceptor),
+				}, grpc.WithUnaryInterceptor(middleware.UnaryReqTimeInterceptor), grpc.WithStatsHandler(handler),
 			)
 			if err != nil {
 				logger.GetLogger().Panic(context2.Background(), "create user protocol client conn error:", err)

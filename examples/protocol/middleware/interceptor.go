@@ -14,17 +14,6 @@ func UnaryReqTimeInterceptor(
 ) error {
 
 	start := time.Now()
-	md, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		ctx = metadata.NewOutgoingContext(ctx, md)
-	}
-
-	var requestIds = md["requestid"]
-	var requestId = ""
-	if len(requestIds) > 0 {
-		requestId = requestIds[0]
-		ctx = context.WithValue(ctx, "requestId", requestId)
-	}
 
 	err := invoker(ctx, method, req, reply, cc, opts...)
 	logger.GetLogger().WithField("method", method).
@@ -39,6 +28,7 @@ func UnaryRespTimeServerInterceptor(
 	ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
 ) (any, error) {
 	start := time.Now()
+
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		logger.GetLogger().Errorf(ctx, "middleware log rpc call failed with empty metadata")
