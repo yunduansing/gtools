@@ -6,6 +6,7 @@ import (
 	"github.com/yunduansing/gtools/utils"
 	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/grpc/metadata"
+	"strings"
 )
 
 type Context struct {
@@ -84,7 +85,7 @@ func (ctx *Context) GetContext() c.Context {
 
 	// 将 OpenTelemetry 的 headers 合并到 metadata
 	for k, v := range carrier {
-		md[k] = v
+		md[strings.ToLower(k)] = v
 	}
 
 	return metadata.NewOutgoingContext(baseCtx, md)

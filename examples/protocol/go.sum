@@ -61,6 +61,8 @@ github.com/yunduansing/gtools v0.0.0-20250411084705-bb547b846a9e h1:urs89Zz0RgDS
 github.com/yunduansing/gtools v0.0.0-20250411084705-bb547b846a9e/go.mod h1:FKlP+tRvkaVd/kqqjGxdE3FLIJh/57eD8+MRNgaaxnQ=
 github.com/yunduansing/gtools v0.0.0-20250411091809-e2dc923794fd h1:5QpD18GPC9c/yrsE0cRQ/8S9Q8wbwVCNlmKL9nZvLjI=
 github.com/yunduansing/gtools v0.0.0-20250411091809-e2dc923794fd/go.mod h1:FKlP+tRvkaVd/kqqjGxdE3FLIJh/57eD8+MRNgaaxnQ=
+github.com/yunduansing/gtools v0.0.0-20250415080342-a862d2952690 h1:8ox+ePvQy+c7aXJuI1dI5xmLFF/xJ2C7wtNBJOMu3mc=
+github.com/yunduansing/gtools v0.0.0-20250415080342-a862d2952690/go.mod h1:FKlP+tRvkaVd/kqqjGxdE3FLIJh/57eD8+MRNgaaxnQ=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.60.0 h1:x7wzEgXfnzJcHDwStJT+mxOz4etr2EcexjqhBvmoakw=

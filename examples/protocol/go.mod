@@ -6,7 +6,7 @@ toolchain go1.23.7
 
 require (
 	github.com/golang/protobuf v1.5.4
-	github.com/yunduansing/gtools v0.0.0-20250411091809-e2dc923794fd
+	github.com/yunduansing/gtools v0.0.0-20250415080342-a862d2952690
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.60.0
 	go.opentelemetry.io/otel v1.35.0
 	google.golang.org/grpc v1.71.1

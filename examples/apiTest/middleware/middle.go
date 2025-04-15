@@ -56,7 +56,7 @@ func WrapRequestMiddle(handler GinAction) gin.HandlerFunc {
 			requestId = xRequestId
 		} else {
 			requestId = context.GenRequestIdByUUID()
-			c.Request = c.Request.WithContext(context2.WithValue(c.Request.Context(), "requestId", requestId))
+			c.Request = c.Request.WithContext(context2.WithValue(c.Request.Context(), "requestid", requestId))
 		}
 
 		start := time.Now()
